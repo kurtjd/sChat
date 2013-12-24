@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     /* As the user types, each character returned by getch() is stored here
      * until he presses enter. Then the message is sent and the buffer reset. */
-    char msgbuf[MAX_MSG_LEN];
+    char msgbuf[MAX_MSG_LEN] = "";
 
     while(1)
     {

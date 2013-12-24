@@ -1,9 +1,9 @@
 #ifdef WIN32
 #include <windows.h>
-#include <ncurses.h>
+#include <curses.h>
 #define XSLEEP(time) Sleep(time)
 #else
-#include <curses.h>
+#include <ncurses.h>
 #define XSLEEP(time) nanosleep((struct timespec[]){{0, (time * 1000000L)}}, NULL)
 #endif
 #include <stdlib.h>

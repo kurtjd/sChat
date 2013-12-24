@@ -118,7 +118,8 @@ void handle_input(char msgbuf[])
         // send_message(msgbuf);
         clear_input(msgbuf);
     }
-    else if(keyp == KEY_BACKSPACE)
+    // There are multiple keys representing backspace.
+    else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)
     {
         backspace(msgbuf); 
     }

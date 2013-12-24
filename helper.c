@@ -34,9 +34,7 @@ void backspace(char msgbuf[])
 {
     msgbuf[strlen(msgbuf) - 1] = '\0';
 
-    /* Since cursor is to the right of the last character, 
-     * first call to delch() moves the cursor back once.
-     * The second call actually deletes the character. */
-    delch();
+    // Moves the cursor to the left then deletes the character under it.
+    moveby(0, -1);
     delch();
 }

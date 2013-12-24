@@ -1,5 +1,5 @@
-#include <ncurses.h>
 #include <string.h>
+#include "xcurses.h"
 #include "helper.h"
 
 void append(char dest[], const char c)

@@ -13,7 +13,6 @@
 #include "network.h"
 
 #define MAX_MSG_LEN 50
-#define REFRESH_RATE 5
 #define LOL 1
 
 

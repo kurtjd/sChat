@@ -33,6 +33,8 @@ void echo_user_input(const char msgbuf[]);
 // Handles all user input. Self-explanatory.
 void handle_input(char msgbuf[]);
 
+void show_banner( void );
+
 
 int main(int argc, char *argv[])
 {
@@ -124,4 +126,9 @@ void handle_input(char msgbuf[])
         if(msglen < MAX_MSG_LEN)
             append(msgbuf, keyp);
     }
+}
+
+void show_banner( void )
+{
+	printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
 }

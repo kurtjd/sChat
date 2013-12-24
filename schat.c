@@ -13,6 +13,7 @@
 #include "network.h"
 
 #define MAX_MSG_LEN 50
+#define REFRESH_RATE 5
 #define LOL 1
 
 
@@ -28,7 +29,7 @@ void init_curses(int * const screen_h, int * const screen_w);
 void draw_input_field(const int length, const int screen_h);
 
 // Echo back what the user is currently typing.
-void echo_user_input(const char msgbuf[]);
+void echo_user_input(const char msgbuf[], const int screen_h, const int xstart);
 
 // Handles all user input. Self-explanatory.
 void handle_input(char msgbuf[]);
@@ -47,14 +48,14 @@ int main(int argc, char *argv[])
      * until he presses enter. Then the message is sent and the buffer reset. */
     char msgbuf[MAX_MSG_LEN] = "";
 
+    draw_input_field(screen_w, screen_h);
+
     while(1)
     {
         // get_messages();
         // show_messages();
-        draw_input_field(screen_w, screen_h);
-        echo_user_input(msgbuf);
+        echo_user_input(msgbuf, screen_h, 2);
         handle_input(msgbuf);
-        refresh();
     }
 
     endwin();
@@ -98,8 +99,9 @@ void draw_input_field(const int length, const int screen_h)
 }
 
 
-void echo_user_input(const char msgbuf[])
+void echo_user_input(const char msgbuf[], const int screen_h, const int xstart)
 {
+    move(screen_h - 1, xstart);
     printw(msgbuf);
 }
 
@@ -128,6 +130,8 @@ void handle_input(char msgbuf[])
         if(msglen < MAX_MSG_LEN)
             append(msgbuf, keyp);
     }
+
+    refresh();
 }
 
 

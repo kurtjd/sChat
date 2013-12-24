@@ -33,7 +33,7 @@ void create_daemon(const int port){
     server.sin_addr.s_addr = INADDR_ANY;
 
     if(bind(lsockfd, (struct sockaddr *)&server, sockaddr_size) < 0){
-        printf( "Error: Unable to bind to port %i\n", port );
+        printf("Error: Unable to bind to port %i\n", port);
         exit(1);
     }
 
@@ -43,7 +43,7 @@ void create_daemon(const int port){
     }
 
     psockfd = accept(lsockfd, (struct sockaddr *)&peer, &sockaddr_size);
-    dup2( psockfd, 1 );
+    dup2(psockfd, 1);
     // printf("Connected\n");
     close(psockfd);
 }

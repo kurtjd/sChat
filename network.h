@@ -5,6 +5,6 @@
 
 #define MAX_CONNECTIONS 2
 
-void create_daemon( const int port );
+void create_daemon(const int port);
 
 #endif

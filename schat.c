@@ -1,9 +1,9 @@
 #ifdef WIN32
 #include <windows.h>
-#include <ncurses.h>
+#include <curses.h>
 #define XSLEEP(time) Sleep(time)
 #else
-#include <curses.h>
+#include <ncurses.h>
 #define XSLEEP(time) nanosleep((struct timespec[]){{0, (time * 1000000L)}}, NULL)
 #endif
 #include <stdlib.h>
@@ -91,7 +91,7 @@ void draw_input_field(const int length, const int screen_h)
 
     /* ACS_HLINE is a special character for a horizontal line,
      * with a normal dash '-' as the alternative character. */
-    for(int i = 0; i < length; ++i) /*addch(ACS_HLINE);*/ addch('_');
+    for(int i = 0; i < length; ++i) addch('_');
 
     // Just add a 'prompt' character for stylistic reasons.
     printw("> ");

@@ -3,7 +3,7 @@
 #include <curses.h>
 #define XSLEEP(time) Sleep(time)
 #else
-#include <ncurses.h>
+#include <curses.h>
 #define XSLEEP(time) nanosleep((struct timespec[]){{0, (time * 1000000L)}}, NULL)
 #endif
 #include <stdlib.h>
@@ -12,6 +12,8 @@
 #include "helper.h"
 
 #define MAX_MSG_LEN 50
+// Gotta set lol = 1!
+#define LOL 1
 
 
 /* Sets up the curses environment with preferred settings.

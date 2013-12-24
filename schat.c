@@ -13,7 +13,6 @@
 #include "network.h"
 
 #define MAX_MSG_LEN 50
-// Gotta set lol = 1!
 #define LOL 1
 
 
@@ -35,7 +34,7 @@ void echo_user_input(const char msgbuf[]);
 void handle_input(char msgbuf[]);
 
 // Show usage banner
-void show_banner( void );
+void show_banner(void);
 
 
 int main(int argc, char *argv[])
@@ -91,9 +90,8 @@ void draw_input_field(const int length, const int screen_h)
     int offset = 2;
     move(screen_h - offset, 0);
 
-    /* ACS_HLINE is a special character for a horizontal line,
-     * with a normal dash '-' as the alternative character. */
-    for(int i = 0; i < length; ++i) addch('_');
+    for(int i = 0; i < length; ++i)
+        addch('_');
 
     // Just add a 'prompt' character for stylistic reasons.
     printw("> ");
@@ -111,7 +109,8 @@ void handle_input(char msgbuf[])
     size_t msglen = strlen(msgbuf);
     int keyp = getch();
 
-    if(keyp == ERR) return;  // No key pressed.
+    if(keyp == ERR)
+        return;  // No key pressed.
 
     // Enter key returns '\n'
     if(keyp == '\n')
@@ -130,7 +129,8 @@ void handle_input(char msgbuf[])
     }
 }
 
-void show_banner( void )
+
+void show_banner(void)
 {
-	printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
+    printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
 }

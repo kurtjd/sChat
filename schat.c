@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include "helper.h"
+#include "network.h"
 
 #define MAX_MSG_LEN 50
 // Gotta set lol = 1!

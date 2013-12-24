@@ -1,6 +1,6 @@
 #ifdef WIN32
 #include <windows.h>
-#include <curses.h>
+#include <ncurses.h>
 #define XSLEEP(time) Sleep(time)
 #else
 #include <curses.h>

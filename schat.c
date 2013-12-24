@@ -2,7 +2,6 @@
 #include "xcurses.h"
 #include "interface.h"
 #include "network.h"
-#include "helper.h"
 
 #define LOL 1
 

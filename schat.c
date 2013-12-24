@@ -33,6 +33,7 @@ void echo_user_input(const char msgbuf[]);
 // Handles all user input. Self-explanatory.
 void handle_input(char msgbuf[]);
 
+// Show usage banner
 void show_banner( void );
 
 

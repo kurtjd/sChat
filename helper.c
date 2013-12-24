@@ -10,7 +10,7 @@ void append(char dest[], const char c)
 }
 
 
-void moveby(int yinc, int xinc)
+void moveby(const int yinc, const int xinc)
 {
     int cury, curx;
     getyx(stdscr, cury, curx);  // Gets current cursor position.

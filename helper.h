@@ -8,7 +8,7 @@
 void append(char dest[], const char c);
 
 // Moves the cursor by specified amount.
-void moveby(int yinc, int xinc);
+void moveby(const int yinc, const int xinc);
 
 // Clears the input buffer and the echo'd input from the screen.
 void clear_input(char msgbuf[]);

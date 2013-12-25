@@ -10,8 +10,15 @@ Interface short term:
 
 -Allow message to be longer than screen length by having message scroll as user types it
 
--Implement basic command processor ie: /quit = quit program
 
 Network:
 
 -ADD ALL.
+
+
+Longish term:
+
+-Add '.schat' file where users can specify some default settings
+-Implement basic command processor ie: /quit = quit program
+-Add various run flags for options
+-Add encryption

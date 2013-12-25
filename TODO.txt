@@ -19,6 +19,9 @@ Network:
 Longish term:
 
 -Add '.schat' file where users can specify some default settings
+
 -Implement basic command processor ie: /quit = quit program
+
 -Add various run flags for options
+
 -Add encryption

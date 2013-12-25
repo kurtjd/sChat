@@ -81,6 +81,9 @@ void handle_input(char msgbuf[], MessageHistory *messages)
         // send_message(msgbuf);
         add_message(messages, FROM_SELF, time(0), msgbuf);
         clear_input(msgbuf);
+
+        // Instead of calling this every cycle, only call it here and when a new message is received.
+        show_message_history(messages);
     }
     // There are multiple keys representing backspace.
     else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)

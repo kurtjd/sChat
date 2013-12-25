@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
     while(1)
     {
         // get_messages();
-        show_message_history(&messages);
         echo_user_input(msgbuf, screen_h, 2);
         handle_input(msgbuf, &messages);
     }

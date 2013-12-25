@@ -9,7 +9,7 @@ Interface short term:
 
 -Create message poll
 
--Add users sent message to message poll
+-Add users sent message to message history
 
 -Allow scrolling through chat history via arrow keys
 

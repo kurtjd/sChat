@@ -13,6 +13,7 @@ Longish term:
 -Implement basic command processor ie: /quit = quit program
 -Add various run flags for options
 -Add encryption
+-Add 'buddy' lists where you can map names to IP addresses
 
 
 Network:

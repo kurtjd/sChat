@@ -2,6 +2,7 @@
 #include "xcurses.h"
 #include "helper.h"
 #include "interface.h"
+#include "message.h"
 
 
 void init_curses(int * const screen_h, int * const screen_w)

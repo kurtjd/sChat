@@ -2,6 +2,7 @@
 #include "xcurses.h"
 #include "interface.h"
 #include "network.h"
+#include "message.h"
 
 #define LOL 1
 
@@ -23,7 +24,7 @@ int main(int argc, char *argv[])
     /* Why use pointers when you can KISS? Although this isn't space
      * efficient and places a cap on the number of messages saved
      * in the history, it can be changed later on if this is an issue. */
-    // char messages[MAX_HISTORY][MAX_MSG_LEN];
+    Message messages[MAX_HISTORY];
 
     draw_input_field(screen_w, screen_h);
 

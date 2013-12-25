@@ -1,10 +1,9 @@
 /* A collection of functions that handle the actual interface and I/O */
-
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#define MAX_MSG_LEN 51
-#define MAX_HISTORY 100
+#include <time.h>
+
 
 /* Sets up the curses environment with preferred settings.
  * screen_h and screen_w are set by this function.

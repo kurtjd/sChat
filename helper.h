@@ -1,6 +1,5 @@
 /* Just a collection of miscellaneous helper functions that don't need to
  * be cluttering the main source file. */
-
 #ifndef HELPER_H
 #define HELPER_H
 

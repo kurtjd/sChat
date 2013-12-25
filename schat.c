@@ -21,21 +21,21 @@ int main(int argc, char *argv[])
      * until he presses enter. Then the message is sent and the buffer reset. */
     char msgbuf[MAX_MSG_LEN] = "";
 
-    /* Why use pointers when you can KISS? Although this isn't space
-     * efficient and places a cap on the number of messages saved
-     * in the history, it can be changed later on if this is an issue. */
-    Message messages[MAX_HISTORY];
+    // Create and initialize the message history 'queue'.
+    MessageHistory messages;
+    history_init(&messages, 10);  // Sets max history to 10 for now.
 
     draw_input_field(screen_w, screen_h);
 
     while(1)
     {
         // get_messages();
-        // show_messages();
+        show_message_history(&messages);
         echo_user_input(msgbuf, screen_h, 2);
-        handle_input(msgbuf);
+        handle_input(msgbuf, &messages);
     }
 
+    clear_history(&messages);
     endwin();
     return 0;
 }

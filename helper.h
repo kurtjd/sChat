@@ -7,16 +7,16 @@
 #include "message.h"
 
 // Appends char c to string dest.
-void append(char dest[], const char c);
+void append(char *dest, const char c);
 
 // Moves the cursor by specified amount.
 void moveby(const int yinc, const int xinc);
 
 // Clears the input buffer and the echo'd input from the screen.
-void clear_input(char msgbuf[]);
+void clear_input(char *msgbuf);
 
 // Deletes the last char from input buffer and from the screen.
-void backspace(char msgbuf[]);
+void backspace(char *msgbuf);
 
 // Checks if malloc was successful and peforms cleanup if not.
 void* safe_malloc(const size_t size, MessageHistory *messages);

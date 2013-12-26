@@ -6,16 +6,18 @@
 #include "message.h"
 #include "helper.h"
 
-#define LOL 1
-
 
 // Show usage banner
 void show_banner(void);
 
 
-int main()  // Removed argc and argv for now to avoid warnings.
+int main(int argc, char *argv[])
 {
-    // These will be initialized by init_curses().
+    // SUPRRESSES GCC UNUSED VARIABLE WARNING!
+    // THIS IS ONLY TEMPORARY!
+    (void)argc;
+    (void)argv;
+ 
     int screen_h, screen_w;
     init_curses(&screen_h, &screen_w);
 
@@ -32,7 +34,7 @@ int main()  // Removed argc and argv for now to avoid warnings.
     while(1)
     {
         show_message_history(&messages, screen_h, screen_w);
-        echo_user_input(msgbuf, screen_h, 2);
+        echo_user_input(msgbuf, screen_h, 2);  // '2' is just where the cursor begins on the x axis
         handle_input(msgbuf, &messages);
 
         /* This only updates part of the screen to change,
@@ -42,7 +44,6 @@ int main()  // Removed argc and argv for now to avoid warnings.
     }
 
     clean_exit(EXIT_SUCCESS, &messages);
-    return 0;
 }
 
 

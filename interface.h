@@ -18,8 +18,7 @@ void draw_input_field(const int length, const int screen_h);
 // Echo back what the user is currently typing.
 void echo_user_input(const char *msgbuf, const int screen_h, const int xstart);
 
-/* Handles all user input. The message history is passed along for when
- * it calls the add_message() function. */
+// Handles all user input.
 void handle_input(char *msgbuf, MessageHistory *messages);
 
 #endif

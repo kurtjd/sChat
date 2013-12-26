@@ -26,16 +26,12 @@ struct Message
     char txt[MAX_MSG_LEN];
 };
 
-// A queue which holds MAX_HISTORY number of Messages.
 typedef struct
 {
     int max_history;
     int msg_count;  // A count of messages aka size of history.
     Message *first_msg;
     Message *last_msg;
-    /* Was originally going to have function pointers in here,
-     * but then you'd just end up with calls like messages->pop_front(messages)
-     * which is just redundant. */
 } MessageHistory;
 
 

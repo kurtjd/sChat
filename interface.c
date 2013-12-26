@@ -8,16 +8,14 @@
 
 void init_curses(int *screen_h, int *screen_w)
 {
-    /* I know it is 'good practice' to always check for null pointers
-     * in functions that accept arguments passed by address, but
-     * seeing as this isn't some API I'd rather not clutter code
-     * with all that checking, especially in cases where you'd have to
-     * intentionally pass a null pointer such as this. */
+    if(!screen_h || !screen_w)
+        clean_exit(EXIT_FAILURE, NULL);
+
     initscr();
     cbreak();
     noecho();  // Gotta turn @echo off!
-    keypad(stdscr, TRUE);
-    nodelay(stdscr, TRUE);  // Makes getch() non-blocking.
+    keypad(stdscr, 1);
+    nodelay(stdscr, 1);  // Makes getch() non-blocking.
 
     /* Dereference here because getmaxyx(), like many ncurses functions,
      * is actually a macro. This essentially expands to:
@@ -30,6 +28,13 @@ void init_curses(int *screen_h, int *screen_w)
 
 void show_message_history(MessageHistory *messages, const int screen_h, const int screen_w)
 {
+    // SUPRESS UNUSED PARAMETER WARNING
+    (void)screen_h;
+    (void)screen_w;
+
+    if(!messages)
+        clean_exit(EXIT_FAILURE, NULL);
+
     /* This is done so the message history isn't redrawn every cycle.
      * If prev_last_msg doesn't hold the same address as the current last_msg,
      * we can conclude a new message was added. */
@@ -47,7 +52,6 @@ void show_message_history(MessageHistory *messages, const int screen_h, const in
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
         printw("%s\n", final_msg);
         free(final_msg);
-
         msg = msg->next_msg;
     }
 
@@ -78,6 +82,9 @@ void echo_user_input(const char *msgbuf, const int screen_h, const int xstart)
 
 void handle_input(char *msgbuf, MessageHistory *messages)
 {
+    if(!messages)
+        clean_exit(EXIT_FAILURE, NULL);
+
     size_t msglen = strlen(msgbuf);
     int keyp = getch();
 
@@ -87,7 +94,6 @@ void handle_input(char *msgbuf, MessageHistory *messages)
     // Enter key returns '\n', and don't send blank messages.
     if(keyp == '\n' && msglen > 0)
     {
-        // send_message(msgbuf);
         add_message(messages, FROM_SELF, time(0), msgbuf);
         clear_input(msgbuf);
     }

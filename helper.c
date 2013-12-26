@@ -4,7 +4,7 @@
 #include "helper.h"
 #include "message.h"
 
-void append(char dest[], const char c)
+void append(char *dest, const char c)
 {
     size_t destlen = strlen(dest);
     dest[destlen] = c;
@@ -20,7 +20,7 @@ void moveby(const int yinc, const int xinc)
 }
 
 
-void clear_input(char msgbuf[])
+void clear_input(char *msgbuf)
 {
     // Moves the cursor to the beginning of the echo'd input.
     moveby(0, (strlen(msgbuf) * -1));
@@ -32,7 +32,7 @@ void clear_input(char msgbuf[])
 }
 
 
-void backspace(char msgbuf[])
+void backspace(char *msgbuf)
 {
     msgbuf[strlen(msgbuf) - 1] = '\0';
 
@@ -51,9 +51,12 @@ void* safe_malloc(const size_t size, MessageHistory *messages)
     return newmem;
 }
 
+
 void clean_exit(const int status, MessageHistory *messages)
 {
-    clear_history(messages);
+    if(messages)
+        clear_history(messages);
+
     endwin();
     exit(status);
 }

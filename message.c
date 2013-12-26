@@ -6,6 +6,9 @@
 
 void history_init(MessageHistory *messages, const int max_history)
 {
+    if(!messages)
+        clean_exit(EXIT_FAILURE, NULL);
+
     messages->max_history = max_history;
     messages->msg_count = 0;
 
@@ -16,11 +19,13 @@ void history_init(MessageHistory *messages, const int max_history)
 
 void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
+    if(!messages)
+        clean_exit(EXIT_FAILURE, NULL);
+
     Message *new_msg = new_message(messages, sender, timestamp, msg);
 
     if(!messages->first_msg)
     {
-        // Create the first link in the chain.
         messages->first_msg = new_msg;
     }
     else if(messages->msg_count >= messages->max_history)  // If at max history, gotta make room.
@@ -43,6 +48,9 @@ void add_message(MessageHistory *messages, const int sender, const time_t timest
 
 void clear_history(MessageHistory *messages)
 {
+    if(!messages)
+        clean_exit(EXIT_FAILURE, NULL);
+
     Message *msg = messages->first_msg;
     while(msg)
     {
@@ -55,6 +63,8 @@ void clear_history(MessageHistory *messages)
 
 char* format_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
+    (void)timestamp;  // SUPPRESS UNUSED PARAMETER WARNING ONLY FOR NOW!
+
     // This will need to be dynamically allocated once I use names instead of the below defaults.
     char msg_sender[7];
     strncpy(msg_sender, (sender == FROM_SELF) ? "You:  " : "Peer: ", 7);
@@ -88,6 +98,9 @@ Message* new_message(MessageHistory *messages, const int sender, const time_t ti
 
 Message* pop_front(MessageHistory *messages)
 {
+    if(!messages)
+        clean_exit(EXIT_FAILURE, NULL);
+    
     Message *nxtmsg = messages->first_msg->next_msg;
     free(messages->first_msg);
     return nxtmsg;

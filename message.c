@@ -2,20 +2,21 @@
 #include <string.h>
 #include <time.h>
 #include "message.h"
+#include "helper.h"
 
 void history_init(MessageHistory *messages, const int max_history)
 {
     messages->max_history = max_history;
     messages->msg_count = 0;
 
-    // Set these pointers to 0 so any attempt to dereference prematurely will crash.
-    messages->first_msg = 0;
-    messages->last_msg = 0;
+    // Set these pointers to NULL so any attempt to dereference prematurely will crash.
+    messages->first_msg = NULL;
+    messages->last_msg = NULL;
 }
 
-void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char msg[])
+void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
-    Message *new_msg = new_message(sender, timestamp, msg);
+    Message *new_msg = new_message(messages, sender, timestamp, msg);
 
     if(!messages->first_msg)
     {
@@ -52,15 +53,35 @@ void clear_history(MessageHistory *messages)
 }
 
 
+char* format_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
+{
+    // This will need to be dynamically allocated once I use names instead of the below defaults.
+    char msg_sender[7];
+    strncpy(msg_sender, (sender == FROM_SELF) ? "You:  " : "Peer: ", 7);
+
+    /* Allocate enough space to hold the name along with the message.
+    * +1 to account for null character. */
+    char *message = (char *)safe_malloc(strlen(msg_sender) + strlen(msg) + 1, messages);
+
+    // Then copy individual strings into message.
+    strncpy(message, msg_sender, sizeof(msg_sender));
+    strncat(message, msg, strlen(msg) + 1);  // +1 for null char
+
+    return message;
+}
+
+
 /* BELOW FUNCTIONS ARE INTERNAL USE ONLY. SHOULD NOT BE USED OUTSIDE THIS LIBRARY. */
 
-Message* new_message(const int sender, const time_t timestamp, const char msg[])
+Message* new_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
-    Message *new_msg = (Message *)malloc(sizeof(Message));
-    new_msg->next_msg = 0;
+    Message *new_msg = (Message *)safe_malloc(sizeof(Message), messages);
+    new_msg->next_msg = NULL;
     new_msg->sender = sender;
     new_msg->timestamp = timestamp;
-    strcpy(new_msg->txt, msg);
+
+    // Can't use sizeof on an array passed into a function, so add 1 to account for null char.
+    strncpy(new_msg->txt, msg, strlen(msg) + 1);
 
     return new_msg;
 }

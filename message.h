@@ -5,9 +5,9 @@
 
 #include <time.h>
 
-#define MAX_MSG_LEN 51
+#define MAX_MSG_LEN 50
 #define FROM_SELF 0
-#define FROM_FRIEND 1
+#define FROM_PEER 1
 
 
 /* The components of a message.
@@ -21,7 +21,7 @@ typedef struct Message Message;
 struct Message
 {
     Message *next_msg;
-    int sender;  // Either FROM_SELF or FROM_FRIEND.
+    int sender;  // Either FROM_SELF or FROM_PEER.
     time_t timestamp;
     char txt[MAX_MSG_LEN];
 };
@@ -43,17 +43,19 @@ typedef struct
 void history_init(MessageHistory *messages, const int max_history);
 
 // Adds a message to the message history to be displayed.
-void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char msg[]);
+void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
 
 // Frees all memory in the linked list.
 void clear_history(MessageHistory *messages);
 
+// Returns a formatted message ready to be printed.
+char* format_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
 
 
 /* BELOW FUNCTIONS ARE INTERNAL USE ONLY. SHOULD NOT BE USED OUTSIDE THIS LIBRARY. */
 
 // Creates a new instance of the Message struct on the heap.
-Message* new_message(const int sender, const time_t timestamp, const char msg[]);
+Message* new_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
 
 /* When a new message is added and the history limit is at its max, delete the oldest message.
  * Also returns the 2nd message to be set as the new first message. */

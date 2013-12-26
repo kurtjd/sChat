@@ -1,6 +1,8 @@
+#include <stdlib.h>
 #include <string.h>
 #include "xcurses.h"
 #include "helper.h"
+#include "message.h"
 
 void append(char dest[], const char c)
 {
@@ -37,4 +39,21 @@ void backspace(char msgbuf[])
     // Moves the cursor to the left then deletes the character under it.
     moveby(0, -1);
     delch();
+}
+
+
+void* safe_malloc(const size_t size, MessageHistory *messages)
+{
+    void *newmem = malloc(size);
+    if(!newmem)
+        clean_exit(EXIT_FAILURE, messages);
+
+    return newmem;
+}
+
+void clean_exit(const int status, MessageHistory *messages)
+{
+    clear_history(messages);
+    endwin();
+    exit(status);
 }

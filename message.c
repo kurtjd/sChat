@@ -74,7 +74,7 @@ char* format_message(MessageHistory *messages, const int sender, const time_t ti
     char *message = safe_malloc(strlen(msg_sender) + strlen(msg) + 1, messages);
 
     // Then copy individual strings into message.
-    strncpy(message, msg_sender, sizeof(msg_sender));
+    strncpy(message, msg_sender, sizeof msg_sender);
     strncat(message, msg, strlen(msg) + 1);  // +1 for null char
 
     return message;

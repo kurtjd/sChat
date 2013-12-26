@@ -71,7 +71,7 @@ char* format_message(MessageHistory *messages, const int sender, const time_t ti
 
     /* Allocate enough space to hold the name along with the message.
     * +1 to account for null character. */
-    char *message = (char *)safe_malloc(strlen(msg_sender) + strlen(msg) + 1, messages);
+    char *message = safe_malloc(strlen(msg_sender) + strlen(msg) + 1, messages);
 
     // Then copy individual strings into message.
     strncpy(message, msg_sender, sizeof(msg_sender));
@@ -85,7 +85,7 @@ char* format_message(MessageHistory *messages, const int sender, const time_t ti
 
 Message* new_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
-    Message *new_msg = (Message *)safe_malloc(sizeof(Message), messages);
+    Message *new_msg = safe_malloc(sizeof(Message), messages);
     new_msg->next_msg = NULL;
     new_msg->sender = sender;
     new_msg->timestamp = timestamp;

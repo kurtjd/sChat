@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "xcurses.h"
 #include "helper.h"
 #include "interface.h"
@@ -102,7 +103,7 @@ void handle_input(char *msgbuf, MessageHistory *messages)
     {
         backspace(msgbuf); 
     }
-    else if(keyp >= ' ' && keyp <= '~')  // Printable character range.
+    else if(isprint(keyp))
     {
         // < as opposed to <= to account for NULL character.
         if(msglen < MAX_MSG_LEN)

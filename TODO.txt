@@ -18,4 +18,4 @@ Longish term:
 
 Network:
 
--ADD ALL.
+-Add send and receive functions 

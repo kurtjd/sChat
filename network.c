@@ -13,7 +13,8 @@
 
 #include "network.h"
 
-int peer_listen(const char *port){
+int peer_listen(const char *port)
+{
 
 	int sockfd;
 	socklen_t sockaddr_size = sizeof(struct sockaddr);
@@ -82,7 +83,8 @@ int peer_listen(const char *port){
 	return 1;
 }
 
-int peer_connect(const char *host, const char *port){
+int peer_connect(const char *host, const char *port)
+{
 
 	int sockfd;
 	struct addrinfo client, *servinfo, *p;

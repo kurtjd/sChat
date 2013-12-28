@@ -5,6 +5,6 @@
 
 #define MAX_CONNECTIONS 2
 
-void peer_listen(const char *port);
+int peer_listen(const char *port);
 
 #endif

@@ -13,37 +13,71 @@
 
 #include "network.h"
 
-void create_daemon(const int port){
+int peer_listen(const char *port){
 
-    // define and configure local and peer sockets 
+	int sockfd;
+	socklen_t sockaddr_size = sizeof(struct sockaddr);
 
-    int lsockfd, psockfd;
-    socklen_t sockaddr_size = sizeof(struct sockaddr);
+	struct addrinfo server, *servinfo, *p;
+	struct sockaddr_in peer;
+	char peer_ip[INET_ADDRSTRLEN];
 
-    struct sockaddr_in server;
-    struct sockaddr_in peer;
+	// Configure the local socket and addrinfo
 
-    if((lsockfd = socket( AF_INET, SOCK_STREAM, 0)) < 0){
-        printf("Error: Unable to create socket\n");
-        exit(1);
-    }
+	memset(&server, 0, sizeof(server));
+	server.ai_family = AF_UNSPEC;
+	server.ai_socktype = SOCK_STREAM;
+	server.ai_flags = AI_PASSIVE;
 
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    server.sin_addr.s_addr = INADDR_ANY;
+	if((getaddrinfo(NULL, port, &server, &servinfo)) != 0){
+		fprintf(stderr, "Error: Unable to prepare addrinfo\n");
+		return 0;
+	}
 
-    if(bind(lsockfd, (struct sockaddr *)&server, sockaddr_size) < 0){
-        printf("Error: Unable to bind to port %i\n", port);
-        exit(1);
-    }
+	// Loop through our addinfo structure and bind to the first possible result
 
-    if(listen(lsockfd, MAX_CONNECTIONS ) < 0){
-        printf("Error: Unable to listen on port %i\n", port);
-        exit(1);
-    }
+	for(p = servinfo; p != NULL; p = p->ai_next){
 
-    psockfd = accept(lsockfd, (struct sockaddr *)&peer, &sockaddr_size);
-    dup2(psockfd, 1);
-    // printf("Connected\n");
-    close(psockfd);
+		if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
+			fprintf(stderr, "Error: Unable to create socket\n");
+			return 0;
+		}
+
+		if(bind(sockfd, p->ai_addr, p->ai_addrlen) < 0){
+			fprintf(stderr, "Error: Bind\n");
+			close(sockfd);
+			continue;
+		}
+
+		break;
+	}
+
+	if(p == NULL){
+		fprintf(stderr, "Error: Failed to bind to port %s\n", port);
+	}
+
+	if(listen(sockfd, MAX_CONNECTIONS) < 0){
+		fprintf(stderr, "Error: Unable to listen on port %s\n", port);
+		return 0;
+	}
+
+	// Wait for a peer to connect to us.
+
+	while(1){
+		if( (accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
+			fprintf(stderr, "Error: could not accept connection from peer\n");
+			return 0;
+		}
+
+		// Convert peer IP to a string
+
+		inet_ntop(peer.sin_family, &peer.sin_addr, peer_ip, sizeof(peer_ip));
+
+		printf("Connected to peer: %s\n", peer_ip);
+
+		close(sockfd);
+		break;
+	}
+
+	return 1;
 }

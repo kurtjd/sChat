@@ -5,6 +5,6 @@
 
 #define MAX_CONNECTIONS 2
 
-void create_daemon(const int port);
+void peer_listen(const char *port);
 
 #endif

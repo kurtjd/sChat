@@ -57,6 +57,8 @@ int peer_listen(const char *port)
 		fprintf(stderr, "Error: Failed to bind to port %s\n", port);
 	}
 
+	freeaddrinfo(servinfo);
+
 	if(listen(sockfd, MAX_CONNECTIONS) < 0){
 		fprintf(stderr, "Error: Unable to listen on port %s\n", port);
 		return 0;

@@ -130,6 +130,28 @@ int peer_connect(const char *host, const char *port)
 	return 1;
 }
 
+int peer_send(const char *message)
+{
+	if((send(main_sockfd, message, strlen(message), 0)) < 0){
+		fprintf(stderr, "Error: Unable to send message: %s",message);	
+		return 0;
+	}
+
+	return 1;
+}
+
+int peer_recv(void)
+{
+	int r;
+	char buf[MAXMSGLEN];
+	if((r = recv(main_sockfd, buf, MAXMSGLEN, 0)) < 0){
+		fprintf(stderr, "Error: Unable to receive message\n");
+		return 0;
+	}
+
+	return 1;
+}
+
 void peer_close(void)
 {
 	close(main_sockfd);

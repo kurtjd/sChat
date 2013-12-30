@@ -67,7 +67,7 @@ int peer_listen(const char *port)
 	// Wait for a peer to connect to us.
 
 	while(1){
-		if( (accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
+		if( (main_sockfd = accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
 			fprintf(stderr, "Error: could not accept connection from peer\n");
 			return 0;
 		}
@@ -88,7 +88,6 @@ int peer_listen(const char *port)
 int peer_connect(const char *host, const char *port)
 {
 
-	int sockfd;
 	struct addrinfo client, *servinfo, *p;
 
 	memset(&client, 0, sizeof(client));
@@ -106,16 +105,16 @@ int peer_connect(const char *host, const char *port)
 
 		for(p = servinfo; p != NULL; p = p->ai_next) {
 
-			if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
+			if((main_sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
 				fprintf(stderr, "Error unable to create socket\n");
 				continue;
 			}
 
 			printf("Connecting to peer %s:%s\n",host,port);
 
-			if(connect(sockfd, p->ai_addr, p->ai_addrlen) < 0){
+			if(connect(main_sockfd, p->ai_addr, p->ai_addrlen) < 0){
 				fprintf(stderr, "Error: Connect\n");
-				close(sockfd);
+				close(main_sockfd);
 				continue;
 			}
 
@@ -129,4 +128,9 @@ int peer_connect(const char *host, const char *port)
 	freeaddrinfo(servinfo);
 
 	return 1;
+}
+
+void peer_close(void)
+{
+	close(main_sockfd);
 }

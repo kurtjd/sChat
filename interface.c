@@ -55,37 +55,12 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
         int msglines = (strlen(final_msg) / screen_w) + 1;
 
         if(screenfull)
-        {
-            /* Display each line from the bottom-up.
-             * starty is checked because attempting to move the cursor
-             * beyond the screen and then drawing causes problems. */
-            for(int line = msglines; line > 0 && starty >= 0; --line)
-            {
-                // Position cursor and clear all previous text on the line.
-                move(starty--, 0);
-                clrtoeol();
-
-                /* Display at most screen_w characters of the line, and determine
-                 * which character in the line starts a newline. */
-                printw("%.*s", screen_w, final_msg + ((line - 1) * screen_w));
-            }
-        }
+            print_lines(final_msg, msglines, screen_w, &starty);
         else
         {
-            starty += msglines;
-
-            if(starty > maxlines)
-            {
-                screenfull = 1;
-                free(final_msg);
-
-                // Make a recursive call in order to repeat this function as if the screen were full.
-                show_message_history(messages, screen_h, screen_w);
+            print_message(final_msg, msglines, maxlines, &screenfull, &starty, messages, screen_h, screen_w);
+            if(screenfull)
                 return;
-            }
-
-            // Lines break automatically when printing downward, so no need for anything fancy.
-            printw("%s\n", final_msg);
         }
 
         free(final_msg);
@@ -148,4 +123,42 @@ void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_
         if(msglen < MAX_MSG_LEN)
             append(msgbuf, keyp);
     }
+}
+
+
+void print_lines(const char *msg, const int msglines, const int screen_w, int *starty)
+{
+    /* Display each line from the bottom-up.
+     * starty is checked because attempting to move the cursor
+     * beyond the screen and then drawing causes problems. */
+    for(int line = msglines; line > 0 && *starty >= 0; --line)
+    {
+        // Position cursor and clear all previous text on the line.
+        move((*starty)--, 0);
+        clrtoeol();
+
+        /* Display at most screen_w characters of the line, and determine
+         * which character in the line starts a newline. */
+        printw("%.*s", screen_w, msg + ((line - 1) * screen_w));
+    }
+}
+
+
+void print_message(char *msg, const int msglines, const int maxlines, int *screenfull,
+                   int *starty, const MessageHistory *messages, const int screen_h, const int screen_w)
+{
+    *starty += msglines;
+
+    if(*starty > maxlines)
+    {
+        *screenfull = 1;
+        free(msg);
+
+        // Make a recursive call to the parent function  in order to repeat it as if the screen were full.
+        show_message_history(messages, screen_h, screen_w);
+        return;
+    }
+
+    // Lines break automatically when printing downward, so no need for anything fancy.
+    printw("%s\n", msg);
 }

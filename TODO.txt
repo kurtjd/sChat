@@ -8,7 +8,6 @@ Interface short term:
 -Make message display fancier
 -Allow scrolling through chat history via arrow keys
 -Allow message to be longer than screen length by having message scroll as user types it
--Break show_message_history() into smaller functions
 
 Longish term:
 

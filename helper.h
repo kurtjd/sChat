@@ -13,15 +13,15 @@ void append(char *dest, const char c);
 void moveby(const int yinc, const int xinc);
 
 // Clears the input buffer and the echo'd input from the screen.
-void clear_input(char *msgbuf);
+void clear_input(char *msgbuf, const unsigned screen_w);
 
 // Deletes the last char from input buffer and from the screen.
 void backspace(char *msgbuf);
 
 // Checks if malloc was successful and peforms cleanup if not.
-void* safe_malloc(const size_t size, MessageHistory *messages);
+void* safe_malloc(const size_t size, const MessageHistory *messages);
 
 // Performs cleanup then exits program.
-void clean_exit(const int status, MessageHistory *messages);
+void clean_exit(const int status, const MessageHistory *messages);
 
 #endif

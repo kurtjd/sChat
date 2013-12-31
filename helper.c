@@ -3,6 +3,7 @@
 #include "xcurses.h"
 #include "helper.h"
 #include "message.h"
+#include "interface.h"
 
 void append(char *dest, const char c)
 {
@@ -20,10 +21,16 @@ void moveby(const int yinc, const int xinc)
 }
 
 
-void clear_input(char *msgbuf)
+void clear_input(char *msgbuf, const unsigned screen_w)
 {
-    // Moves the cursor to the beginning of the echo'd input.
-    moveby(0, (strlen(msgbuf) * -1));
+    /* Moves the cursor to the beginning of the echo'd input.
+     * If the input is shorter than the screen width, move the cursor
+     * back the length of the screen. If not, just move back the length
+     * of the screen. */
+    if(strlen(msgbuf) < screen_w)
+        moveby(0, (strlen(msgbuf) * -1));
+    else
+        moveby(0, (screen_w * -1) + PROMPT_LEN + 1);
 
     // Clears all text from the cursor to the end of line.
     clrtoeol();
@@ -34,6 +41,10 @@ void clear_input(char *msgbuf)
 
 void backspace(char *msgbuf)
 {
+    // Don't want this function running if there is no input.
+    if(strlen(msgbuf) < 1)
+        return;
+
     msgbuf[strlen(msgbuf) - 1] = '\0';
 
     // Moves the cursor to the left then deletes the character under it.
@@ -42,7 +53,7 @@ void backspace(char *msgbuf)
 }
 
 
-void* safe_malloc(const size_t size, MessageHistory *messages)
+void* safe_malloc(const size_t size, const MessageHistory *messages)
 {
     void *newmem = malloc(size);
     if(!newmem)
@@ -52,10 +63,12 @@ void* safe_malloc(const size_t size, MessageHistory *messages)
 }
 
 
-void clean_exit(const int status, MessageHistory *messages)
+void clean_exit(const int status, const MessageHistory *messages)
 {
     if(messages)
-        clear_history(messages);
+        /* Cast away const from messages. This is done so the other functions which
+         * call clean_exit() can use a const version of messages. */
+        clear_history((MessageHistory *)messages);
 
     endwin();
     exit(status);

@@ -6,7 +6,7 @@
 
 void history_init(MessageHistory *messages, const int max_history)
 {
-    if(!messages)
+    if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     messages->max_history = max_history;
@@ -19,7 +19,7 @@ void history_init(MessageHistory *messages, const int max_history)
 
 void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
-    if(!messages)
+    if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     Message *new_msg = new_message(messages, sender, timestamp, msg);
@@ -48,7 +48,7 @@ void add_message(MessageHistory *messages, const int sender, const time_t timest
 
 void clear_history(MessageHistory *messages)
 {
-    if(!messages)
+    if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     Message *msg = messages->first_msg;
@@ -61,7 +61,7 @@ void clear_history(MessageHistory *messages)
 }
 
 
-char* format_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
+char* format_message(const MessageHistory *messages, const int sender, const time_t timestamp, const char *msg)
 {
     (void)timestamp;  // SUPPRESS UNUSED PARAMETER WARNING ONLY FOR NOW!
 
@@ -87,6 +87,10 @@ Message* new_message(MessageHistory *messages, const int sender, const time_t ti
 {
     Message *new_msg = safe_malloc(sizeof(Message), messages);
     new_msg->next_msg = NULL;
+
+    // If first message, this will be null as intended.
+    new_msg->prev_msg = messages->last_msg;
+
     new_msg->sender = sender;
     new_msg->timestamp = timestamp;
 
@@ -98,10 +102,11 @@ Message* new_message(MessageHistory *messages, const int sender, const time_t ti
 
 Message* pop_front(MessageHistory *messages)
 {
-    if(!messages)
+    if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
     
     Message *nxtmsg = messages->first_msg->next_msg;
+    nxtmsg->prev_msg = NULL;
     free(messages->first_msg);
     return nxtmsg;
 }

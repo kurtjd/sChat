@@ -27,15 +27,15 @@ int main(int argc, char *argv[])
 
     // Create and initialize the message history 'queue'.
     MessageHistory messages;
-    history_init(&messages, 10);  // Sets max history to 10 for now.
+    history_init(&messages, 250);  // Sets max history to 10 for now.
     
     draw_input_field(screen_w, screen_h);
 
     while(1)
     {
         show_message_history(&messages, screen_h, screen_w);
-        echo_user_input(msgbuf, screen_h, 2);  // '2' is just where the cursor begins on the x axis
-        handle_input(msgbuf, &messages);
+        echo_user_input(msgbuf, screen_h, screen_w, PROMPT_LEN);  // '2' is just where the cursor begins on the x axis
+        handle_input(msgbuf, &messages, screen_w);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,

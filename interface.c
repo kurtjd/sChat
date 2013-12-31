@@ -9,7 +9,7 @@
 
 void init_curses(int *screen_h, int *screen_w)
 {
-    if(!screen_h || !screen_w)
+    if(screen_h == NULL || screen_w == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     initscr();
@@ -27,13 +27,9 @@ void init_curses(int *screen_h, int *screen_w)
 }
 
 
-void show_message_history(MessageHistory *messages, const int screen_h, const int screen_w)
+void show_message_history(const MessageHistory *messages, const int screen_h, const int screen_w)
 {
-    // SUPRESS UNUSED PARAMETER WARNING
-    (void)screen_h;
-    (void)screen_w;
-
-    if(!messages)
+    if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     /* This is done so the message history isn't redrawn every cycle.
@@ -43,17 +39,33 @@ void show_message_history(MessageHistory *messages, const int screen_h, const in
     if(prev_last_msg == messages->last_msg)
         return;
 
-    move(0, 0);  // Position cursor
-
     // Loop through each message by following the chain until we hit a null pointer.
     // Obviously display will be made prettier at a later time.
-    Message *msg = messages->first_msg;
+    int starty = screen_h - (INPUT_HEIGHT + 1);
+    Message *msg = messages->last_msg;
+
     while(msg)
     {
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
-        printw("%s\n", final_msg);
+        int msglines = (strlen(final_msg) / screen_w) + 1;
+
+        // Display each line from the bottom-up.
+        for(int line = msglines; line > 0; --line)
+        {
+            if(starty >= 0)
+            {
+                // Position cursor and clear all previous text on the line.
+                move(starty--, 0);
+                clrtoeol();
+
+                /* Display at most screen_w characters of the line, and determine
+                * which character in the line starts a newline. */
+                printw("%.*s", screen_w, final_msg + ((line - 1) * screen_w));
+            }
+        }
+
         free(final_msg);
-        msg = msg->next_msg;
+        msg = msg->prev_msg;
     }
 
     prev_last_msg = messages->last_msg;
@@ -63,8 +75,7 @@ void show_message_history(MessageHistory *messages, const int screen_h, const in
 void draw_input_field(const int length, const int screen_h)
 {
     // Sets the cursor position to the y offset.
-    const int OFFSET = 2;
-    move(screen_h - OFFSET, 0);
+    move(screen_h - INPUT_HEIGHT, 0);
 
     for(int i = 0; i < length; ++i)
         addch('_');
@@ -74,16 +85,17 @@ void draw_input_field(const int length, const int screen_h)
 }
 
 
-void echo_user_input(const char *msgbuf, const int screen_h, const int xstart)
+void echo_user_input(const char *msgbuf, const int screen_h, const int screen_w, const int xstart)
 {
     move(screen_h - 1, xstart);
-    printw(msgbuf);
+    // Only print characters that fit on the screen.
+    printw("%.*s", screen_w - PROMPT_LEN, msgbuf);
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages)
+void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_w)
 {
-    if(!messages)
+    if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     size_t msglen = strlen(msgbuf);
@@ -96,7 +108,7 @@ void handle_input(char *msgbuf, MessageHistory *messages)
     if(keyp == '\n' && msglen > 0)
     {
         add_message(messages, FROM_SELF, time(0), msgbuf);
-        clear_input(msgbuf);
+        clear_input(msgbuf, screen_w);
     }
     // There are multiple keys representing backspace.
     else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)

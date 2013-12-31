@@ -5,7 +5,12 @@
 
 #include <time.h>
 
-#define MAX_MSG_LEN 50
+/* Holy shit really strange bug where if this is 300 or 500 exactly, some very strange output
+ * is spat out if the user attempts to type more than the max length and the program aborts.
+ * This isn't a segmentation fault because I check the user isn't trying to type any more
+ * than the max length. This problem ONLY happens when set to 300 or 500. */
+#define MAX_MSG_LEN 400
+
 #define FROM_SELF 0
 #define FROM_PEER 1
 
@@ -21,6 +26,7 @@ typedef struct Message Message;
 struct Message
 {
     Message *next_msg;
+    Message *prev_msg;
     int sender;  // Either FROM_SELF or FROM_PEER.
     time_t timestamp;
     char txt[MAX_MSG_LEN];
@@ -45,7 +51,7 @@ void add_message(MessageHistory *messages, const int sender, const time_t timest
 void clear_history(MessageHistory *messages);
 
 // Returns a formatted message ready to be printed.
-char* format_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
+char* format_message(const MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
 
 
 /* BELOW FUNCTIONS ARE INTERNAL USE ONLY. SHOULD NOT BE USED OUTSIDE THIS LIBRARY. */

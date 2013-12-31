@@ -4,7 +4,6 @@ Interface short term:
 
 -Redraw on window resize
 -Fix strange bug where a MAX_MSG_LEN of exactly 300 or 500 causes problems, but no other numbers do (AFAIK)
--Have messages begin showing at top when chat session is new and screen is yet full
 -Make messages break at words when hitting end of screen, rather than mid-word as it is now
 -Make message display fancier
 -Allow scrolling through chat history via arrow keys

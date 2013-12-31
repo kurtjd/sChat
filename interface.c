@@ -39,35 +39,61 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
     if(prev_last_msg == messages->last_msg)
         return;
 
-    // Loop through each message by following the chain until we hit a null pointer.
-    // Obviously display will be made prettier at a later time.
-    int starty = screen_h - (INPUT_HEIGHT + 1);
-    Message *msg = messages->last_msg;
+    static int screenfull = 0;  // Is the screen full of messages?
 
+    int maxlines = screen_h - (INPUT_HEIGHT + 1);
+    int starty = screenfull ? maxlines : 0;
+
+    move(0, 0);  // Position cursor
+    
+    /* Loop through each message by following the chain until we hit a null pointer.
+     * Whether or not the screen is full determines if we go backwards or forwards. */
+    Message *msg = screenfull ? messages->last_msg : messages->first_msg;
     while(msg)
     {
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
         int msglines = (strlen(final_msg) / screen_w) + 1;
 
-        /* Display each line from the bottom-up.
-         * starty is checked because attempting to move the cursor
-         * beyond the screen and then drawing causes problems. */
-        for(int line = msglines; line > 0 && starty >= 0; --line)
+        if(screenfull)
         {
-            // Position cursor and clear all previous text on the line.
-            move(starty--, 0);
-            clrtoeol();
+            /* Display each line from the bottom-up.
+             * starty is checked because attempting to move the cursor
+             * beyond the screen and then drawing causes problems. */
+            for(int line = msglines; line > 0 && starty >= 0; --line)
+            {
+                // Position cursor and clear all previous text on the line.
+                move(starty--, 0);
+                clrtoeol();
 
-            /* Display at most screen_w characters of the line, and determine
-            * which character in the line starts a newline. */
-            printw("%.*s", screen_w, final_msg + ((line - 1) * screen_w));
+                /* Display at most screen_w characters of the line, and determine
+                 * which character in the line starts a newline. */
+                printw("%.*s", screen_w, final_msg + ((line - 1) * screen_w));
+            }
+        }
+        else
+        {
+            starty += msglines;
+
+            if(starty > maxlines)
+            {
+                screenfull = 1;
+                free(final_msg);
+
+                // Make a recursive call in order to repeat this function as if the screen were full.
+                show_message_history(messages, screen_h, screen_w);
+                return;
+            }
+
+            // Lines break automatically when printing downward, so no need for anything fancy.
+            printw("%s\n", final_msg);
         }
 
         free(final_msg);
-        msg = msg->prev_msg;
+        msg = screenfull ? msg->prev_msg : msg->next_msg;
     }
 
     prev_last_msg = messages->last_msg;
+
 }
 
 

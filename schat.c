@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     // Create and initialize the message history 'queue'.
     MessageHistory messages;
-    history_init(&messages, 250);  // Sets max history to 10 for now.
+    history_init(&messages, 250);  // Sets max history to 250 for now.
     
     draw_input_field(screen_w, screen_h);
 

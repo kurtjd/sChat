@@ -49,19 +49,18 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
         int msglines = (strlen(final_msg) / screen_w) + 1;
 
-        // Display each line from the bottom-up.
-        for(int line = msglines; line > 0; --line)
+        /* Display each line from the bottom-up.
+         * starty is checked because attempting to move the cursor
+         * beyond the screen and then drawing causes problems. */
+        for(int line = msglines; line > 0 && starty >= 0; --line)
         {
-            if(starty >= 0)
-            {
-                // Position cursor and clear all previous text on the line.
-                move(starty--, 0);
-                clrtoeol();
+            // Position cursor and clear all previous text on the line.
+            move(starty--, 0);
+            clrtoeol();
 
-                /* Display at most screen_w characters of the line, and determine
-                * which character in the line starts a newline. */
-                printw("%.*s", screen_w, final_msg + ((line - 1) * screen_w));
-            }
+            /* Display at most screen_w characters of the line, and determine
+            * which character in the line starts a newline. */
+            printw("%.*s", screen_w, final_msg + ((line - 1) * screen_w));
         }
 
         free(final_msg);
@@ -88,6 +87,7 @@ void draw_input_field(const int length, const int screen_h)
 void echo_user_input(const char *msgbuf, const int screen_h, const int screen_w, const int xstart)
 {
     move(screen_h - 1, xstart);
+
     // Only print characters that fit on the screen.
     printw("%.*s", screen_w - PROMPT_LEN, msgbuf);
 }
@@ -110,6 +110,7 @@ void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_
         add_message(messages, FROM_SELF, time(0), msgbuf);
         clear_input(msgbuf, screen_w);
     }
+
     // There are multiple keys representing backspace.
     else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)
     {

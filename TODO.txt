@@ -5,7 +5,6 @@ Interface short term:
 -Make messages break at words when hitting end of screen, rather than mid-word as it is now
 -Make message display fancier
 -Allow scrolling through chat history via arrow keys
--Allow message to be longer than screen length by having message scroll as user types it
 
 Longish term:
 

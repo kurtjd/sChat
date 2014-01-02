@@ -19,19 +19,27 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
 void draw_input_field(const int length, const int screen_h);
 
 // Echo back what the user is currently typing.
-void echo_user_input(const char *msgbuf, const int screen_h, const int screen_w, const int xstart);
+void echo_user_input(const char *msgbuf, const unsigned screen_h, const unsigned screen_w, const int xstart, const int echo_start);
+
+// Changes the index to begin echoing input.
+void change_echo_start(int *echo_start, const int dir);
 
 // Handles all user input.
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w);
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start);
 
 // Prints a message line-by-line upwards.
 void print_lines(const char *msg, const int msglines, const int screen_w, int *starty);
 
 // Prints a message while also checking if the screen is full.
-void print_message(char *msg, const int msglines, const int maxlines, int *screenfull,
-                   int *starty, const MessageHistory *messages, const int screen_h, const int screen_w);
+void print_message(char *msg, const int msglines, const int maxlines, int *screenfull, int *starty);
 
 // Reinitializes ncurses to work with the resized window.
 void window_resize(int *screen_h, int *screen_w);
+
+// Clears the input buffer and the echo'd input from the screen.
+void clear_input(char *msgbuf, const unsigned screen_w, int *echo_start);
+
+// Deletes the last char from input buffer and from the screen.
+void backspace(char *msgbuf);
 
 #endif

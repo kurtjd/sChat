@@ -1,3 +1,5 @@
 -Sending a single character sometimes leave a ghost rectangle in the input field on Linux.
 
 -When pasting in text with multiple lines, the newline character is read and the message automatically sent.
+
+-When backspacing back from a message longer than the screen, only a small amount of input is echo'd.

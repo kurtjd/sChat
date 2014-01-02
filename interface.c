@@ -48,6 +48,7 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
     
     /* Loop through each message by following the chain until we hit a null pointer.
      * Whether or not the screen is full determines if we go backwards or forwards. */
+    // Note: if the max history is really short, when a long message is deleted the screen needs to be cleared.
     Message *msg = screenfull ? messages->last_msg : messages->first_msg;
     while(msg)
     {
@@ -58,7 +59,9 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
             print_lines(final_msg, msglines, screen_w, &starty);
         else
         {
-            print_message(final_msg, msglines, maxlines, &screenfull, &starty, messages, screen_h, screen_w);
+            print_message(final_msg, msglines, maxlines, &screenfull, &starty);
+
+            // If print_message() determined the screen was full, exit the function.
             if(screenfull)
                 return;
         }
@@ -92,22 +95,40 @@ void draw_input_field(const int length, const int screen_h)
 }
 
 
-void echo_user_input(const char *msgbuf, const int screen_h, const int screen_w, const int xstart)
+void echo_user_input(const char *msgbuf, const unsigned screen_h, const unsigned screen_w, const int xstart, const int echo_start)
 {
     move(screen_h - 1, xstart);
 
-    // Only print characters that fit on the screen.
-    printw("%.*s", screen_w - PROMPT_LEN, msgbuf);
+    (void)screen_w;
+
+    // How much of the input to show if it is longer than the screen.
+    int cursor_start = 10 * echo_start;
+
+    printw("%s", msgbuf + cursor_start);
+    clrtoeol();
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w)
+void change_echo_start(int *echo_start, const int dir)
+{
+    // Don't decrease echo_start if below 0.
+    if(*echo_start != 0 || dir != -1)
+        *echo_start += dir;
+}
+
+
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
 
     size_t msglen = strlen(msgbuf);
     int keyp = getch();
+
+    // Get the cursor x and y coordinates.
+    int cursy, cursx;
+    getyx(stdscr, cursy, cursx);
+    (void)cursy;  // Supress unused variable warning.
 
     if(keyp == ERR)
         return;  // No key pressed.
@@ -121,22 +142,29 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
         add_message(messages, FROM_SELF, time(0), msgbuf);
 
         // clear_input() makes a comparison with an unsigned integer.
-        clear_input(msgbuf, (unsigned)(*screen_w));
+        clear_input(msgbuf, (unsigned)(*screen_w), echo_start);
     }
 
     // There are multiple keys representing backspace.
     else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)
     {
         backspace(msgbuf); 
+
+        if(cursx == (PROMPT_LEN + 2))
+            change_echo_start(echo_start, -1);
     }
     else if(isprint(keyp))
     {
         if(msglen < (MAX_MSG_LEN - 1))
+        {
             append(msgbuf, keyp);
+
+            if(cursx == (*screen_w - 1))
+                change_echo_start(echo_start, 1);
+        }
     }
     else if(keyp == KEY_RESIZE)
     {
-        // Reinitializes the window and updates the screen_w and screen_h variables.
         window_resize(screen_h, screen_w);
     }
 }
@@ -160,8 +188,7 @@ void print_lines(const char *msg, const int msglines, const int screen_w, int *s
 }
 
 
-void print_message(char *msg, const int msglines, const int maxlines, int *screenfull,
-                   int *starty, const MessageHistory *messages, const int screen_h, const int screen_w)
+void print_message(char *msg, const int msglines, const int maxlines, int *screenfull, int *starty)
 {
     *starty += msglines;
 
@@ -169,9 +196,6 @@ void print_message(char *msg, const int msglines, const int maxlines, int *scree
     {
         *screenfull = 1;
         free(msg);
-
-        // Make a recursive call to the parent function  in order to repeat it as if the screen were full.
-        show_message_history(messages, screen_h, screen_w);
         return;
     }
 
@@ -186,4 +210,38 @@ void window_resize(int *screen_h, int *screen_w)
     refresh();
     getmaxyx(stdscr, *screen_h, *screen_w);
     clear();
+}
+
+
+void clear_input(char *msgbuf, const unsigned screen_w, int *echo_start)
+{
+    /* Moves the cursor to the beginning of the echo'd input.
+     * If the input is shorter than the screen width, move the cursor
+     * back the length of the screen. If not, just move back the length
+     * of the screen. */
+    if(strlen(msgbuf) < screen_w)
+        moveby(0, (strlen(msgbuf) * -1));
+    else
+        moveby(0, (screen_w * -1) + PROMPT_LEN + 1);
+
+    // Clears all text from the cursor to the end of line.
+    clrtoeol();
+
+    *echo_start = 0;  // Reset the echo start position.
+
+    msgbuf[0] = '\0';  // Clear the buffer.
+}
+
+
+void backspace(char *msgbuf)
+{
+    // Don't want this function running if there is no input.
+    if(strlen(msgbuf) < 1)
+        return;
+
+    msgbuf[strlen(msgbuf) - 1] = '\0';
+
+    // Moves the cursor to the left then deletes the character under it.
+    moveby(0, -1);
+    delch();
 }

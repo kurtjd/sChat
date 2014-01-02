@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
     /* As the user types, each character returned by getch() is stored here
      * until he presses enter. Then the message is sent and the buffer reset. */
     char msgbuf[MAX_MSG_LEN] = "";
+    int echo_start = 0;  // Which character in the user input to start echoing.
 
     // Create and initialize the message history 'queue'.
     MessageHistory messages;
@@ -33,8 +34,8 @@ int main(int argc, char *argv[])
     {
         draw_input_field(screen_w, screen_h);
         show_message_history(&messages, screen_h, screen_w);
-        echo_user_input(msgbuf, screen_h, screen_w, PROMPT_LEN);  // '2' is just where the cursor begins on the x axis
-        handle_input(msgbuf, &messages, &screen_h, &screen_w);
+        echo_user_input(msgbuf, screen_h, screen_w, PROMPT_LEN, echo_start);
+        handle_input(msgbuf, &messages, &screen_h, &screen_w, &echo_start);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,

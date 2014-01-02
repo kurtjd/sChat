@@ -29,13 +29,12 @@ int main(int argc, char *argv[])
     MessageHistory messages;
     history_init(&messages, 250);  // Sets max history to 250 for now.
     
-    draw_input_field(screen_w, screen_h);
-
     while(1)
     {
+        draw_input_field(screen_w, screen_h);
         show_message_history(&messages, screen_h, screen_w);
         echo_user_input(msgbuf, screen_h, screen_w, PROMPT_LEN);  // '2' is just where the cursor begins on the x axis
-        handle_input(msgbuf, &messages, screen_w);
+        handle_input(msgbuf, &messages, &screen_h, &screen_w);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,
@@ -43,7 +42,7 @@ int main(int argc, char *argv[])
         refresh();
     }
 
-    clean_exit(EXIT_SUCCESS, &messages);
+    clean_exit(EXIT_SUCCESS, &messages);  // Should never get to here...
 }
 
 

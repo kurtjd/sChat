@@ -35,9 +35,9 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
     /* This is done so the message history isn't redrawn every cycle.
      * If prev_last_msg doesn't hold the same address as the current last_msg,
      * we can conclude a new message was added. */
-    static Message *prev_last_msg = NULL;
+    /*static Message *prev_last_msg = NULL;
     if(prev_last_msg == messages->last_msg)
-        return;
+        return; */
 
     static int screenfull = 0;  // Is the screen full of messages?
 
@@ -67,8 +67,15 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
         msg = screenfull ? msg->prev_msg : msg->next_msg;
     }
 
-    prev_last_msg = messages->last_msg;
+    /* If the window was made larger, and the entire history
+     * now fits on the screen, we need to change screenfull back to 0. */
+    if(screenfull && starty > 0)
+    {
+        clear();  // If we don't, the old messages will still be at the bottom.
+        screenfull = 0;
+    }
 
+    //prev_last_msg = messages->last_msg;
 }
 
 
@@ -94,7 +101,7 @@ void echo_user_input(const char *msgbuf, const int screen_h, const int screen_w,
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_w)
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -108,8 +115,13 @@ void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_
     // Enter key returns '\n', and don't send blank messages.
     if(keyp == '\n' && msglen > 0)
     {
+        // Just a quick and temporary solution to allow for clean exit.
+        if(strcmp(msgbuf, "/q") == 0) clean_exit(EXIT_SUCCESS, messages);
+
         add_message(messages, FROM_SELF, time(0), msgbuf);
-        clear_input(msgbuf, screen_w);
+
+        // clear_input() makes a comparison with an unsigned integer.
+        clear_input(msgbuf, (unsigned)(*screen_w));
     }
 
     // There are multiple keys representing backspace.
@@ -122,6 +134,11 @@ void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_
         // < as opposed to <= to account for NULL character.
         if(msglen < MAX_MSG_LEN)
             append(msgbuf, keyp);
+    }
+    else if(keyp == KEY_RESIZE)
+    {
+        // Reinitializes the window and updates the screen_w and screen_h variables.
+        window_resize(screen_h, screen_w);
     }
 }
 
@@ -161,4 +178,13 @@ void print_message(char *msg, const int msglines, const int maxlines, int *scree
 
     // Lines break automatically when printing downward, so no need for anything fancy.
     printw("%s\n", msg);
+}
+
+
+void window_resize(int *screen_h, int *screen_w)
+{
+    endwin();
+    refresh();
+    getmaxyx(stdscr, *screen_h, *screen_w);
+    clear();
 }

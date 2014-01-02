@@ -22,7 +22,7 @@ void draw_input_field(const int length, const int screen_h);
 void echo_user_input(const char *msgbuf, const int screen_h, const int screen_w, const int xstart);
 
 // Handles all user input.
-void handle_input(char *msgbuf, MessageHistory *messages, const unsigned screen_w);
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w);
 
 // Prints a message line-by-line upwards.
 void print_lines(const char *msg, const int msglines, const int screen_w, int *starty);
@@ -30,5 +30,8 @@ void print_lines(const char *msg, const int msglines, const int screen_w, int *s
 // Prints a message while also checking if the screen is full.
 void print_message(char *msg, const int msglines, const int maxlines, int *screenfull,
                    int *starty, const MessageHistory *messages, const int screen_h, const int screen_w);
+
+// Reinitializes ncurses to work with the resized window.
+void window_resize(int *screen_h, int *screen_w);
 
 #endif

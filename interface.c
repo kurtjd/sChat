@@ -131,8 +131,7 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     }
     else if(isprint(keyp))
     {
-        // < as opposed to <= to account for NULL character.
-        if(msglen < MAX_MSG_LEN)
+        if(msglen < (MAX_MSG_LEN - 1))
             append(msgbuf, keyp);
     }
     else if(keyp == KEY_RESIZE)

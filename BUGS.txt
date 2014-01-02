@@ -1,5 +1,3 @@
--MAX_MSG_LEN of exactly 300 or 500 causes problems, but no other numbers do (AFAIK). Program crashes when entering a message with the max characters in this case in a very strange way. It's not just a normal string buffer overflow because I check for that and the problem only occurs with these 2 numbers.
-
 -Sending a single character sometimes leave a ghost rectangle in the input field on Linux.
 
 -When pasting in text with multiple lines, the newline character is read and the message automatically sent.

@@ -9,7 +9,7 @@
  * is spat out if the user attempts to type more than the max length and the program aborts.
  * This isn't a segmentation fault because I check the user isn't trying to type any more
  * than the max length. This problem ONLY happens when set to 300 or 500. (AFAIK) */
-#define MAX_MSG_LEN 400
+#define MAX_MSG_LEN 500
 
 #define FROM_SELF 0
 #define FROM_PEER 1

@@ -95,25 +95,27 @@ void draw_input_field(const int length, const int screen_h)
 }
 
 
-void echo_user_input(const char *msgbuf, const unsigned screen_h, const unsigned screen_w, const int xstart, const int echo_start)
+void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo_start)
 {
-    move(screen_h - 1, xstart);
-
-    (void)screen_w;
-
-    // How much of the input to show if it is longer than the screen.
-    int cursor_start = 10 * echo_start;
-
-    printw("%s", msgbuf + cursor_start);
+    move(screen_h - 1, PROMPT_LEN);
+    printw("%s", msgbuf + (SCROLL_GAP * echo_start));
     clrtoeol();
 }
 
 
-void change_echo_start(int *echo_start, const int dir)
+void change_echo_start(int *echo_start, const int dir, const int screen_w)
 {
-    // Don't decrease echo_start if below 0.
-    if(*echo_start != 0 || dir != -1)
+    if(dir > 0)
         *echo_start += dir;
+    else
+    {
+        // If the user backspaced a lot, need to recalculate echo_start.
+        *echo_start -= ((screen_w - PROMPT_LEN) / SCROLL_GAP);
+    }
+
+    // echo_start should always be 0 at a minimum.
+    if(*echo_start < 0)
+        *echo_start = 0;
 }
 
 
@@ -150,8 +152,8 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     {
         backspace(msgbuf); 
 
-        if(cursx == (PROMPT_LEN + 2))
-            change_echo_start(echo_start, -1);
+        if(cursx == (PROMPT_LEN + 1))
+            change_echo_start(echo_start, -1, *screen_w);
     }
     else if(isprint(keyp))
     {
@@ -160,7 +162,7 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
             append(msgbuf, keyp);
 
             if(cursx == (*screen_w - 1))
-                change_echo_start(echo_start, 1);
+                change_echo_start(echo_start, 1, *screen_w);
         }
     }
     else if(keyp == KEY_RESIZE)

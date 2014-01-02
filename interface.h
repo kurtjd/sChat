@@ -5,6 +5,7 @@
 #include "message.h"
 
 #define PROMPT_LEN 2
+#define SCROLL_GAP 20
 #define INPUT_HEIGHT 2
 
 /* Sets up the curses environment with preferred settings.
@@ -19,10 +20,10 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
 void draw_input_field(const int length, const int screen_h);
 
 // Echo back what the user is currently typing.
-void echo_user_input(const char *msgbuf, const unsigned screen_h, const unsigned screen_w, const int xstart, const int echo_start);
+void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo_start);
 
 // Changes the index to begin echoing input.
-void change_echo_start(int *echo_start, const int dir);
+void change_echo_start(int *echo_start, const int dir, const int screen_w);
 
 // Handles all user input.
 void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start);

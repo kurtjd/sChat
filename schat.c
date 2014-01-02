@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     {
         draw_input_field(screen_w, screen_h);
         show_message_history(&messages, screen_h, screen_w);
-        echo_user_input(msgbuf, screen_h, screen_w, PROMPT_LEN, echo_start);
+        echo_user_input(msgbuf, screen_h, echo_start);
         handle_input(msgbuf, &messages, &screen_h, &screen_w, &echo_start);
 
         /* This only updates part of the screen to change,

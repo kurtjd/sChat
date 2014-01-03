@@ -133,7 +133,8 @@ void change_echo_start(int *echo_start, const int dir, const int screen_w)
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start, int *cursor_offset, int *hist_start)
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start,
+                  int *cursor_offset, int *hist_start, int *prev_msg_on)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -155,7 +156,7 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
             clean_exit(EXIT_SUCCESS, messages);
 
         add_message(messages, FROM_SELF, time(0), msgbuf);
-        clear_input(msgbuf, echo_start, cursor_offset);
+        clear_input(msgbuf, echo_start, cursor_offset, prev_msg_on);
     }
 
     // There are multiple keys representing backspace.
@@ -167,20 +168,13 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
             change_echo_start(echo_start, -1, *screen_w);
     }
     else if(isprint(keyp))
-    {
-        if(msglen < (MAX_MSG_LEN - 1))
-        {
-            insert_char(msgbuf, keyp, *echo_start);
+        add_to_msg(msgbuf, keyp, echo_start, *screen_w);
+        
 
-            if(cursx == (*screen_w - 1))
-                change_echo_start(echo_start, 1, *screen_w);
-        }
-    }
-
-    else if(keyp == KEY_UP)
+    else if(keyp == KEY_C_UP)
         change_hist_start(1, hist_start, *screen_h, *screen_w, messages);
     
-    else if(keyp == KEY_DOWN)
+    else if(keyp == KEY_C_DOWN)
         change_hist_start(-1, hist_start, *screen_h, *screen_w, messages);
 
     else if(keyp == KEY_LEFT)
@@ -188,6 +182,12 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
 
     else if(keyp == KEY_RIGHT)
         move_cursor(1, cursor_offset, strlen(msgbuf), *echo_start);
+
+    else if (keyp == KEY_UP)
+        cycle_sent_msg(1, messages, msgbuf, prev_msg_on, echo_start, *screen_w, cursor_offset);
+    
+    else if (keyp == KEY_DOWN)
+        cycle_sent_msg(-1, messages, msgbuf, prev_msg_on, echo_start, *screen_w, cursor_offset);
 
     else if(keyp == KEY_RESIZE)
         window_resize(screen_h, screen_w);
@@ -242,7 +242,7 @@ void window_resize(int *screen_h, int *screen_w)
 }
 
 
-void clear_input(char *msgbuf, int *echo_start, int *cursor_offset)
+void clear_input(char *msgbuf, int *echo_start, int *cursor_offset, int *prev_msg_on)
 {
     // Moves the cursor to the beginning of the echo'd input.
     move(getcury(stdscr), PROMPT_LEN + 1);
@@ -250,8 +250,9 @@ void clear_input(char *msgbuf, int *echo_start, int *cursor_offset)
     // Clears all text from the cursor to the end of line.
     clrtoeol();
 
-    *echo_start = 0;  // Reset the echo start position.
-    *cursor_offset = 0;  // Reset cursor offset.
+    *echo_start = 0;
+    *cursor_offset = 0;
+    *prev_msg_on = 0;
 
     msgbuf[0] = '\0';  // Clear the buffer.
 }
@@ -330,4 +331,70 @@ int get_hist_lines_total(const MessageHistory *messages, const int screen_w)
     }
 
     return total_lines;
+}
+
+
+void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf, int *prev_msg_on,
+                    int *echo_start, const int screen_w, int *cursor_offset)
+{
+    // Cycle between previously sent messages.
+    if(dir < 0)
+    {
+        if(*prev_msg_on > 0)
+            --*prev_msg_on;
+        else
+            *prev_msg_on = messages->msg_count;
+    }
+    else if(dir > 0)
+    {
+        if(*prev_msg_on < messages->msg_count)
+            ++*prev_msg_on;
+        else
+            *prev_msg_on = 0;
+    }
+
+    // Clear the message buffer and text in the input field.
+    msgbuf[0] = '\0';
+    move(getcury(stdscr), PROMPT_LEN);
+    clrtoeol();
+    *echo_start = 0;
+    *cursor_offset = 0;
+
+    /* Loop through the previous messages until we find the one that matches what the user wants,
+     * and then place it into the message buffer. */
+    int i = 0;
+    for(Message *msg = messages->last_msg; i != *prev_msg_on; msg = msg->prev_msg)
+    {
+        if(msg->sender == FROM_SELF)
+            ++i;
+
+        if(i == *prev_msg_on)
+        {
+            /* Copy the previous message into the message buffer character-by-character.
+             * This is done to use some useful features of the add_to_msg() function we'll need.
+             * User input is also echo'd after each character copied in order to determine
+             * when the cursor is at the edge of the screen, thus changing the echo start.
+             * This also needs to be done in case a previous message cycled to was longer
+             * than the screen. */
+            size_t msglen = strlen(msg->txt);
+            for(unsigned c = 0; c < msglen; ++c)
+            {
+                add_to_msg(msgbuf, msg->txt[c], echo_start, screen_w);
+                moveby(0, 1);
+                echo_user_input(msgbuf, getmaxy(stdscr), *echo_start, cursor_offset);
+            }
+        }
+    }
+}
+
+
+void add_to_msg(char *msgbuf, const char c, int *echo_start, const int screen_w)
+{
+    if(strlen(msgbuf) < (MAX_MSG_LEN - 1))
+    {
+        insert_char(msgbuf, c, *echo_start);
+
+        if(getcurx(stdscr) == (screen_w - 1))
+            change_echo_start(echo_start, 1, screen_w);
+    }
 }

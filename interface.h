@@ -26,7 +26,8 @@ void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo
 void change_echo_start(int *echo_start, const int dir, const int screen_w);
 
 // Handles all user input.
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start, int *cursor_offset, int *hist_start);
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start,
+                  int *cursor_offset, int *hist_start, int *prev_msg_on);
 
 // Prints a message line-by-line upwards.
 void print_lines(const char *msg, const int msglines, const int screen_w, int *starty, int *line_on, const int hist_start);
@@ -38,7 +39,7 @@ void print_message(char *msg, const int msglines, const int maxlines, int *scree
 void window_resize(int *screen_h, int *screen_w);
 
 // Clears the input buffer and the echo'd input from the screen.
-void clear_input(char *msgbuf, int *echo_start, int *cursor_offset);
+void clear_input(char *msgbuf, int *echo_start, int *cursor_offset, int *prev_msg_on);
 
 // Deletes the last char from input buffer and from the screen.
 void backspace(char *msgbuf, const int echo_start);
@@ -54,5 +55,12 @@ void change_hist_start(const int dir, int *hist_start, const int screen_h, const
 
 // Returns the total number of lines of all messages in the history.
 int get_hist_lines_total(const MessageHistory *messages, const int screen_w);
+
+// Copies a previously sent message into the current message buffer.
+void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf, int *prev_msg_on,
+                    int *echo_start, const int screen_w, int *cursor_offset);
+
+// Does some checking before calling insert_char().
+void add_to_msg(char *msgbuf, const char c, int *echo_start, const int screen_w);
 
 #endif

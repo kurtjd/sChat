@@ -10,4 +10,8 @@
 #include <ncurses.h>
 #endif
 
+// Might have to change these depending on OS. Not sure if these key codes are portable.
+#define KEY_C_UP 565
+#define KEY_C_DOWN 524
+
 #endif // XCURSES_H

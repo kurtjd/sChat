@@ -6,6 +6,9 @@
 #include <string.h>
 #include "message.h"
 
+#define X 0
+#define Y 1
+
 
 // Moves the cursor by specified amount.
 void moveby(const int yinc, const int xinc);
@@ -15,5 +18,8 @@ void* safe_malloc(const size_t size, const MessageHistory *messages);
 
 // Performs cleanup then exits program.
 void clean_exit(const int status, const MessageHistory *messages);
+
+// Returns either the X or Y position of the cursor.
+int get_cursor(int plane);
 
 #endif

@@ -34,3 +34,12 @@ void clean_exit(const int status, const MessageHistory *messages)
     endwin();
     exit(status);
 }
+
+
+int get_cursor(int plane)
+{
+    int cury, curx;
+    getyx(stdscr, cury, curx);
+
+    return (plane == Y) ? cury : curx;
+}

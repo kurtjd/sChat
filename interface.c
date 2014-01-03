@@ -7,27 +7,17 @@
 #include "message.h"
 
 
-void init_curses(int *screen_h, int *screen_w)
+void init_curses(void)
 {
-    if(screen_h == NULL || screen_w == NULL)
-        clean_exit(EXIT_FAILURE, NULL);
-
     initscr();
     cbreak();
     noecho();  // Gotta turn @echo off!
     keypad(stdscr, 1);
     nodelay(stdscr, 1);  // Makes getch() non-blocking.
-
-    /* Dereference here because getmaxyx(), like many ncurses functions,
-     * is actually a macro. This essentially expands to:
-     *
-     * *screen_h = ROWS;
-     * *screen_w = COLS;   */
-    getmaxyx(stdscr, *screen_h, *screen_w);
 }
 
 
-void show_message_history(const MessageHistory *messages, const int screen_h, const int screen_w, int *hist_start)
+void show_message_history(const MessageHistory *messages, int *hist_start)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -41,7 +31,7 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
 
     static int screenfull = 0;  // Is the screen full of messages?
 
-    int maxlines = screen_h - (INPUT_HEIGHT + 1);
+    int maxlines = LINES - (INPUT_HEIGHT + 1);
     int starty = screenfull ? maxlines : 0;
 
     int line_on = 0;  // Used to determine when to start showing message history.
@@ -55,10 +45,10 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
     while(msg)
     {
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
-        int msglines = (strlen(final_msg) / screen_w) + 1;
+        int msglines = (strlen(final_msg) / COLS) + 1;
 
         if(screenfull)
-            print_lines(final_msg, msglines, screen_w, &starty, &line_on, *hist_start);
+            print_lines(final_msg, msglines, &starty, &line_on, *hist_start);
         else
         {
            /* If the user tried to change the history start position while the screen
@@ -86,16 +76,17 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
         screenfull = 0;
     }
 
+    // This is part of the check to see if a new message was sent.
     //prev_last_msg = messages->last_msg;
 }
 
 
-void draw_input_field(const int length, const int screen_h)
+void draw_input_field()
 {
-    // Sets the cursor position to the y offset.
-    move(screen_h - INPUT_HEIGHT, 0);
+    // Sets the cursor position to the start point of the input field.
+    move(LINES - INPUT_HEIGHT, 0);
 
-    for(int i = 0; i < length; ++i)
+    for(int i = 0; i < COLS; ++i)
         addch('_');
 
     // Just add a 'prompt' character for stylistic reasons.
@@ -103,9 +94,9 @@ void draw_input_field(const int length, const int screen_h)
 }
 
 
-void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo_start, int *cursor_offset)
+void echo_user_input(const char *msgbuf, const int echo_start, int *cursor_offset)
 {
-    move(screen_h - 1, PROMPT_LEN);
+    move(LINES - 1, PROMPT_LEN);
     printw("%s", msgbuf + (SCROLL_GAP * echo_start));
 
     // Moves the cursor back to it's offset position if the user has moved it.
@@ -113,14 +104,14 @@ void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo
 }
 
 
-void change_echo_start(int *echo_start, const int dir, const int screen_w)
+void change_echo_start(int *echo_start, const int dir)
 {
     if(dir > 0)
         *echo_start += dir;
     else
     {
         // If the user backspaced a lot, need to recalculate echo_start.
-        *echo_start -= ((screen_w - PROMPT_LEN) / SCROLL_GAP);
+        *echo_start -= ((COLS - PROMPT_LEN) / SCROLL_GAP);
     }
 
     // echo_start should always be 0 at a minimum.
@@ -128,13 +119,12 @@ void change_echo_start(int *echo_start, const int dir, const int screen_w)
         *echo_start = 0;
 
     // Move the cursor to the beginning of the input to clear it.
-    move(getcury(stdscr), PROMPT_LEN + 1);
+    move(get_cursor(Y), PROMPT_LEN + 1);
     clrtoeol();
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start,
-                  int *cursor_offset, int *hist_start, int *prev_msg_on)
+void handle_input(char *msgbuf, MessageHistory *messages, int *echo_start, int *cursor_offset, int *hist_start, int *prev_msg_on)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -161,18 +151,18 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     {
         backspace(msgbuf, *echo_start);
 
-        if(getcurx(stdscr) == (PROMPT_LEN + 1))
-            change_echo_start(echo_start, -1, *screen_w);
+        if(get_cursor(X) == (PROMPT_LEN + 1))
+            change_echo_start(echo_start, -1);
     }
     else if(isprint(keyp))
-        add_to_msg(msgbuf, keyp, echo_start, *screen_w);
+        add_to_msg(msgbuf, keyp, echo_start);
         
 
     else if(keyp == KEY_C_UP)
-        change_hist_start(1, hist_start, *screen_h, *screen_w, messages);
+        change_hist_start(1, hist_start, messages);
     
     else if(keyp == KEY_C_DOWN)
-        change_hist_start(-1, hist_start, *screen_h, *screen_w, messages);
+        change_hist_start(-1, hist_start, messages);
 
     else if(keyp == KEY_LEFT)
         move_cursor(-1, cursor_offset, strlen(msgbuf), *echo_start);
@@ -181,17 +171,17 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
         move_cursor(1, cursor_offset, strlen(msgbuf), *echo_start);
 
     else if (keyp == KEY_UP)
-        cycle_sent_msg(1, messages, msgbuf, prev_msg_on, echo_start, *screen_w, cursor_offset);
+        cycle_sent_msg(1, messages, msgbuf, prev_msg_on, echo_start, cursor_offset);
     
     else if (keyp == KEY_DOWN)
-        cycle_sent_msg(-1, messages, msgbuf, prev_msg_on, echo_start, *screen_w, cursor_offset);
+        cycle_sent_msg(-1, messages, msgbuf, prev_msg_on, echo_start, cursor_offset);
 
     else if(keyp == KEY_RESIZE)
-        window_resize(screen_h, screen_w);
+        window_resize();
 }
 
 
-void print_lines(const char *msg, const int msglines, const int screen_w, int *starty, int *line_on, const int hist_start)
+void print_lines(const char *msg, const int msglines, int *starty, int *line_on, const int hist_start)
 {
     /* Display each line from the bottom-up.
      * starty is checked because attempting to move the cursor
@@ -204,9 +194,9 @@ void print_lines(const char *msg, const int msglines, const int screen_w, int *s
             move((*starty)--, 0);
             clrtoeol();
 
-            /* Display at most screen_w characters of the line, and determine
+            /* Display at most COLS characters of the line, and determine
             * which character in the line starts a newline. */
-            printw("%.*s", screen_w, msg + ((line - 1) * screen_w));
+            printw("%.*s", COLS, msg + ((line - 1) * COLS));
         }
 
         ++*line_on;
@@ -230,11 +220,10 @@ void print_message(char *msg, const int msglines, const int maxlines, int *scree
 }
 
 
-void window_resize(int *screen_h, int *screen_w)
+void window_resize(void)
 {
     endwin();
     refresh();
-    getmaxyx(stdscr, *screen_h, *screen_w);
     clear();
 }
 
@@ -242,7 +231,7 @@ void window_resize(int *screen_h, int *screen_w)
 void clear_input(char *msgbuf, int *echo_start, int *cursor_offset, int *prev_msg_on)
 {
     // Moves the cursor to the beginning of the echo'd input.
-    move(getcury(stdscr), PROMPT_LEN + 1);
+    move(get_cursor(Y), PROMPT_LEN + 1);
 
     // Clears all text from the cursor to the end of line.
     clrtoeol();
@@ -262,7 +251,7 @@ void backspace(char *msgbuf, const int echo_start)
         return;
 
     // The index in the message buffer to perform deletion.
-    unsigned insert_at = ((getcurx(stdscr) - PROMPT_LEN) - 1) + (SCROLL_GAP * echo_start);
+    unsigned insert_at = ((get_cursor(X) - PROMPT_LEN) - 1) + (SCROLL_GAP * echo_start);
     size_t msglen = strlen(msgbuf);
 
     for(size_t i = insert_at; i < msglen; ++i)
@@ -291,7 +280,7 @@ void move_cursor(const int dir, int *cursor_offset, const int xmax, const int ec
 void insert_char(char *msgbuf, const char c, const int echo_start)
 {
     // The index in the message buffer c is to be inserted.
-    unsigned insert_at = (getcurx(stdscr) - PROMPT_LEN) + (SCROLL_GAP * echo_start);
+    unsigned insert_at = (get_cursor(X) - PROMPT_LEN) + (SCROLL_GAP * echo_start);
     size_t msglen = strlen(msgbuf);
 
     // Move characters to the right that are after the insertion point.
@@ -303,27 +292,27 @@ void insert_char(char *msgbuf, const char c, const int echo_start)
 }
 
 
-void change_hist_start(const int dir, int *hist_start, const int screen_h, const int screen_w, const MessageHistory *messages)
+void change_hist_start(const int dir, int *hist_start, const MessageHistory *messages)
 {
     // Max amount of lines that can fit on screen.
-    int maxlines = screen_h - (INPUT_HEIGHT + 1);
+    int maxlines = LINES - (INPUT_HEIGHT + 1);
 
     if(dir < 0 && *hist_start > 0)
         --*hist_start;
     // This long condition is to make sure hist_start doesn't go out of bounds.
-    else if(dir > 0 && *hist_start < ((get_hist_lines_total(messages, screen_w) - maxlines) - 1))
+    else if(dir > 0 && *hist_start < ((get_hist_lines_total(messages) - maxlines) - 1))
         ++*hist_start;
 }
 
 
-int get_hist_lines_total(const MessageHistory *messages, const int screen_w)
+int get_hist_lines_total(const MessageHistory *messages)
 {
     int total_lines = 0;
 
     for(Message *msg = messages->first_msg; msg != NULL; msg = msg->next_msg)
     {
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
-        total_lines += ((strlen(final_msg) / screen_w) + 1);
+        total_lines += ((strlen(final_msg) / COLS) + 1);
         free(final_msg);
     }
 
@@ -331,8 +320,7 @@ int get_hist_lines_total(const MessageHistory *messages, const int screen_w)
 }
 
 
-void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf, int *prev_msg_on,
-                    int *echo_start, const int screen_w, int *cursor_offset)
+void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf, int *prev_msg_on, int *echo_start, int *cursor_offset)
 {
     // Cycle between previously sent messages.
     if(dir < 0)
@@ -352,7 +340,7 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf,
 
     // Clear the message buffer and text in the input field.
     msgbuf[0] = '\0';
-    move(getcury(stdscr), PROMPT_LEN);
+    move(get_cursor(Y), PROMPT_LEN);
     clrtoeol();
     *echo_start = 0;
     *cursor_offset = 0;
@@ -376,22 +364,22 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf,
             size_t msglen = strlen(msg->txt);
             for(unsigned c = 0; c < msglen; ++c)
             {
-                add_to_msg(msgbuf, msg->txt[c], echo_start, screen_w);
+                add_to_msg(msgbuf, msg->txt[c], echo_start);
                 moveby(0, 1);
-                echo_user_input(msgbuf, getmaxy(stdscr), *echo_start, cursor_offset);
+                echo_user_input(msgbuf, *echo_start, cursor_offset);
             }
         }
     }
 }
 
 
-void add_to_msg(char *msgbuf, const char c, int *echo_start, const int screen_w)
+void add_to_msg(char *msgbuf, const char c, int *echo_start)
 {
     if(strlen(msgbuf) < (MAX_MSG_LEN - 1))
     {
         insert_char(msgbuf, c, *echo_start);
 
-        if(getcurx(stdscr) == (screen_w - 1))
-            change_echo_start(echo_start, 1, screen_w);
+        if(get_cursor(X) == (COLS - 1))
+            change_echo_start(echo_start, 1);
     }
 }

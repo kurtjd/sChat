@@ -18,8 +18,7 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
  
-    int screen_h, screen_w;
-    init_curses(&screen_h, &screen_w);
+    init_curses();
 
     /* As the user types, each character returned by getch() is stored here
      * until he presses enter. Then the message is sent and the buffer reset. */
@@ -35,10 +34,10 @@ int main(int argc, char *argv[])
     
     while(1)
     {
-        draw_input_field(screen_w, screen_h);
-        show_message_history(&messages, screen_h, screen_w, &hist_start);
-        echo_user_input(msgbuf, screen_h, echo_start, &cursor_offset);
-        handle_input(msgbuf, &messages, &screen_h, &screen_w, &echo_start, &cursor_offset, &hist_start, &prev_msg_on);
+        draw_input_field();
+        show_message_history(&messages, &hist_start);
+        echo_user_input(msgbuf, echo_start, &cursor_offset);
+        handle_input(msgbuf, &messages, &echo_start, &cursor_offset, &hist_start, &prev_msg_on);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,

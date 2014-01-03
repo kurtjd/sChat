@@ -1,5 +1,5 @@
 CC=gcc
-FLAGS=-g -Wall -Wextra -pedantic -Werror -std=gnu99
+FLAGS=-Wall -Wextra -pedantic -Werror -std=gnu99
 LIB=-lncurses
 
 all:

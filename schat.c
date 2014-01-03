@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     char msgbuf[MAX_MSG_LEN] = "";
     int echo_start = 0;  // Which character in the user input to start echoing.
     int cursor_offset = 0;  // Where the cursor is positioned realtive to the end of input.
+    int hist_start = 0;  // Where in the history to begin showing messages.
 
     // Create and initialize the message history 'queue'.
     MessageHistory messages;
@@ -34,9 +35,9 @@ int main(int argc, char *argv[])
     while(1)
     {
         draw_input_field(screen_w, screen_h);
-        show_message_history(&messages, screen_h, screen_w);
+        show_message_history(&messages, screen_h, screen_w, &hist_start);
         echo_user_input(msgbuf, screen_h, echo_start, &cursor_offset);
-        handle_input(msgbuf, &messages, &screen_h, &screen_w, &echo_start, &cursor_offset);
+        handle_input(msgbuf, &messages, &screen_h, &screen_w, &echo_start, &cursor_offset, &hist_start);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,

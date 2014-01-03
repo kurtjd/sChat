@@ -27,7 +27,7 @@ void init_curses(int *screen_h, int *screen_w)
 }
 
 
-void show_message_history(const MessageHistory *messages, const int screen_h, const int screen_w)
+void show_message_history(const MessageHistory *messages, const int screen_h, const int screen_w, int *hist_start)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -44,6 +44,8 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
     int maxlines = screen_h - (INPUT_HEIGHT + 1);
     int starty = screenfull ? maxlines : 0;
 
+    int line_on = 0;  // Used to determine when to start showing message history.
+
     move(0, 0);  // Position cursor
     
     /* Loop through each message by following the chain until we hit a null pointer.
@@ -56,9 +58,15 @@ void show_message_history(const MessageHistory *messages, const int screen_h, co
         int msglines = (strlen(final_msg) / screen_w) + 1;
 
         if(screenfull)
-            print_lines(final_msg, msglines, screen_w, &starty);
+            print_lines(final_msg, msglines, screen_w, &starty, &line_on, *hist_start);
         else
         {
+           /* If the user tried to change the history start position while the screen
+             * wasn't full, this puts it back to 0. It would make more sense for this check
+             * to be in change_hist_start(), but since screenfull is not global, there
+             * would be no easy way to check if the screen is full. */
+            *hist_start = 0;
+            
             print_message(final_msg, msglines, maxlines, &screenfull, &starty);
 
             // If print_message() determined the screen was full, exit the function.
@@ -125,7 +133,7 @@ void change_echo_start(int *echo_start, const int dir, const int screen_w)
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start, int *cursor_offset)
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start, int *cursor_offset, int *hist_start)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -169,6 +177,12 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
         }
     }
 
+    else if(keyp == KEY_UP)
+        change_hist_start(1, hist_start, *screen_h, *screen_w, messages);
+    
+    else if(keyp == KEY_DOWN)
+        change_hist_start(-1, hist_start, *screen_h, *screen_w, messages);
+
     else if(keyp == KEY_LEFT)
         move_cursor(-1, cursor_offset, strlen(msgbuf), *echo_start);
 
@@ -180,20 +194,25 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
 }
 
 
-void print_lines(const char *msg, const int msglines, const int screen_w, int *starty)
+void print_lines(const char *msg, const int msglines, const int screen_w, int *starty, int *line_on, const int hist_start)
 {
     /* Display each line from the bottom-up.
      * starty is checked because attempting to move the cursor
      * beyond the screen and then drawing causes problems. */
     for(int line = msglines; line > 0 && *starty >= 0; --line)
     {
-        // Position cursor and clear all previous text on the line.
-        move((*starty)--, 0);
-        clrtoeol();
+        if(*line_on >= hist_start)
+        {
+            // Position cursor and clear all previous text on the line.
+            move((*starty)--, 0);
+            clrtoeol();
 
-        /* Display at most screen_w characters of the line, and determine
-         * which character in the line starts a newline. */
-        printw("%.*s", screen_w, msg + ((line - 1) * screen_w));
+            /* Display at most screen_w characters of the line, and determine
+            * which character in the line starts a newline. */
+            printw("%.*s", screen_w, msg + ((line - 1) * screen_w));
+        }
+
+        ++*line_on;
     }
 }
 
@@ -283,4 +302,32 @@ void insert_char(char *msgbuf, const char c, const int echo_start)
 
     msgbuf[insert_at] = c;
     msgbuf[msglen + 1] = '\0';
+}
+
+
+void change_hist_start(const int dir, int *hist_start, const int screen_h, const int screen_w, const MessageHistory *messages)
+{
+    // Max amount of lines that can fit on screen.
+    int maxlines = screen_h - (INPUT_HEIGHT + 1);
+
+    if(dir < 0 && *hist_start > 0)
+        --*hist_start;
+    // This long condition is to make sure hist_start doesn't go out of bounds.
+    else if(dir > 0 && *hist_start < ((get_hist_lines_total(messages, screen_w) - maxlines) - 1))
+        ++*hist_start;
+}
+
+
+int get_hist_lines_total(const MessageHistory *messages, const int screen_w)
+{
+    int total_lines = 0;
+
+    for(Message *msg = messages->first_msg; msg != NULL; msg = msg->next_msg)
+    {
+        char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
+        total_lines += ((strlen(final_msg) / screen_w) + 1);
+        free(final_msg);
+    }
+
+    return total_lines;
 }

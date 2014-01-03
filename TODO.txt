@@ -4,7 +4,7 @@ Interface short term:
 
 -Make messages break at words when hitting end of screen, rather than mid-word as it is now
 -Make message display fancier
--Allow scrolling through chat history via arrow keys
+-Allow scrolling through your own sent msg history
 -Stop ctrl+c from aborting program
 -Have del key delete character under cursor
 

@@ -6,6 +6,7 @@ Interface short term:
 -Make message display fancier
 -Stop ctrl+c from aborting program
 -Have del key delete character under cursor
+-Replace 'legacy' ncurses functions with 'proper', yet less efficient 'modern' functions.
 
 Longish term:
 

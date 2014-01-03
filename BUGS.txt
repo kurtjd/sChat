@@ -5,3 +5,8 @@
 -When a message is longer than the screen, resizing the window messes up the scolling.
 
 -When inserting text in the middle of input causes the input to reach beyond the screen, problems arise.
+
+-Backspacing in the middle of the input while in a message longer than the screen causes problems
+when reaching the far left.
+
+-Arrow keys should change echo_start when at either end of the screen.

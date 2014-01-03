@@ -142,9 +142,6 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     size_t msglen = strlen(msgbuf);
     int keyp = getch();
 
-    // Get the cursor x coordinate.
-    int cursx = getcurx(stdscr);
-
     if(keyp == ERR)
         return;  // No key pressed.
 
@@ -164,7 +161,7 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     {
         backspace(msgbuf, *echo_start);
 
-        if(cursx == (PROMPT_LEN + 1))
+        if(getcurx(stdscr) == (PROMPT_LEN + 1))
             change_echo_start(echo_start, -1, *screen_w);
     }
     else if(isprint(keyp))

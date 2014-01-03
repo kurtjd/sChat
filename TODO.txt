@@ -6,6 +6,7 @@ Interface short term:
 -Make message display fancier
 -Allow scrolling through chat history via arrow keys
 -Stop ctrl+c from aborting program
+-Have del key delete character under cursor
 
 Longish term:
 

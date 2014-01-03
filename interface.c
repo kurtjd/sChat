@@ -251,9 +251,6 @@ void backspace(char *msgbuf, const int echo_start)
     for(size_t i = insert_at; i < msglen; ++i)
         msgbuf[i] = msgbuf[i + 1];
 
-
-    //msgbuf[strlen(msgbuf) - 1] = '\0';
-
     // Moves the cursor to the left then deletes the character under it.
     moveby(0, -1);
     delch();

@@ -13,6 +13,22 @@
 
 #include "network.h"
 
+int peer_start(int sockfd, const char *host, const char *port)
+{
+	// Try to connect to the host provided 
+	if( (peer_connect(sockfd, host, port)) == 1){
+		return 1;
+	}
+
+	// If we can't connect, act as the server
+	if( (peer_listen(sockfd, port)) == 1){
+		return 1;
+	}
+
+	// Nothing is working. Today ain't your day.
+	return 0;
+}
+
 int peer_listen(int sockfd, const char *port)
 {
 

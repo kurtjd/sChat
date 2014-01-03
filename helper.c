@@ -5,13 +5,6 @@
 #include "message.h"
 #include "interface.h"
 
-void append(char *dest, const char c)
-{
-    size_t destlen = strlen(dest);
-    dest[destlen] = c;
-    dest[destlen + 1] = '\0';
-}
-
 
 void moveby(const int yinc, const int xinc)
 {

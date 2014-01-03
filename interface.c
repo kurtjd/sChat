@@ -95,11 +95,13 @@ void draw_input_field(const int length, const int screen_h)
 }
 
 
-void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo_start)
+void echo_user_input(const char *msgbuf, const unsigned screen_h, const int echo_start, int *cursor_offset)
 {
     move(screen_h - 1, PROMPT_LEN);
     printw("%s", msgbuf + (SCROLL_GAP * echo_start));
-    clrtoeol();
+
+    // Moves the cursor back to it's offset position if the user has moved it.
+    move_cursor(0, cursor_offset, strlen(msgbuf), echo_start);
 }
 
 
@@ -116,10 +118,14 @@ void change_echo_start(int *echo_start, const int dir, const int screen_w)
     // echo_start should always be 0 at a minimum.
     if(*echo_start < 0)
         *echo_start = 0;
+
+    // Move the cursor to the beginning of the input to clear it.
+    move(getcury(stdscr), PROMPT_LEN + 1);
+    clrtoeol();
 }
 
 
-void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start)
+void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *screen_w, int *echo_start, int *cursor_offset)
 {
     if(messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -127,10 +133,8 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     size_t msglen = strlen(msgbuf);
     int keyp = getch();
 
-    // Get the cursor x and y coordinates.
-    int cursy, cursx;
-    getyx(stdscr, cursy, cursx);
-    (void)cursy;  // Supress unused variable warning.
+    // Get the cursor x coordinate.
+    int cursx = getcurx(stdscr);
 
     if(keyp == ERR)
         return;  // No key pressed.
@@ -139,18 +143,17 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     if(keyp == '\n' && msglen > 0)
     {
         // Just a quick and temporary solution to allow for clean exit.
-        if(strcmp(msgbuf, "/q") == 0) clean_exit(EXIT_SUCCESS, messages);
+        if(strcmp(msgbuf, "/q") == 0)
+            clean_exit(EXIT_SUCCESS, messages);
 
         add_message(messages, FROM_SELF, time(0), msgbuf);
-
-        // clear_input() makes a comparison with an unsigned integer.
-        clear_input(msgbuf, (unsigned)(*screen_w), echo_start);
+        clear_input(msgbuf, echo_start, cursor_offset);
     }
 
     // There are multiple keys representing backspace.
     else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)
     {
-        backspace(msgbuf); 
+        backspace(msgbuf, *echo_start);
 
         if(cursx == (PROMPT_LEN + 1))
             change_echo_start(echo_start, -1, *screen_w);
@@ -159,16 +162,21 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *screen_h, int *sc
     {
         if(msglen < (MAX_MSG_LEN - 1))
         {
-            append(msgbuf, keyp);
+            insert_char(msgbuf, keyp, *echo_start);
 
             if(cursx == (*screen_w - 1))
                 change_echo_start(echo_start, 1, *screen_w);
         }
     }
+
+    else if(keyp == KEY_LEFT)
+        move_cursor(-1, cursor_offset, strlen(msgbuf), *echo_start);
+
+    else if(keyp == KEY_RIGHT)
+        move_cursor(1, cursor_offset, strlen(msgbuf), *echo_start);
+
     else if(keyp == KEY_RESIZE)
-    {
         window_resize(screen_h, screen_w);
-    }
 }
 
 
@@ -215,35 +223,67 @@ void window_resize(int *screen_h, int *screen_w)
 }
 
 
-void clear_input(char *msgbuf, const unsigned screen_w, int *echo_start)
+void clear_input(char *msgbuf, int *echo_start, int *cursor_offset)
 {
-    /* Moves the cursor to the beginning of the echo'd input.
-     * If the input is shorter than the screen width, move the cursor
-     * back the length of the screen. If not, just move back the length
-     * of the screen. */
-    if(strlen(msgbuf) < screen_w)
-        moveby(0, (strlen(msgbuf) * -1));
-    else
-        moveby(0, (screen_w * -1) + PROMPT_LEN + 1);
+    // Moves the cursor to the beginning of the echo'd input.
+    move(getcury(stdscr), PROMPT_LEN + 1);
 
     // Clears all text from the cursor to the end of line.
     clrtoeol();
 
     *echo_start = 0;  // Reset the echo start position.
+    *cursor_offset = 0;  // Reset cursor offset.
 
     msgbuf[0] = '\0';  // Clear the buffer.
 }
 
 
-void backspace(char *msgbuf)
+void backspace(char *msgbuf, const int echo_start)
 {
     // Don't want this function running if there is no input.
     if(strlen(msgbuf) < 1)
         return;
 
-    msgbuf[strlen(msgbuf) - 1] = '\0';
+    // The index in the message buffer to perform deletion.
+    unsigned insert_at = ((getcurx(stdscr) - PROMPT_LEN) - 1) + (SCROLL_GAP * echo_start);
+    size_t msglen = strlen(msgbuf);
+
+    for(size_t i = insert_at; i < msglen; ++i)
+        msgbuf[i] = msgbuf[i + 1];
+
+
+    //msgbuf[strlen(msgbuf) - 1] = '\0';
 
     // Moves the cursor to the left then deletes the character under it.
     moveby(0, -1);
     delch();
+}
+
+
+void move_cursor(const int dir, int *cursor_offset, const int xmax, const int echo_start)
+{
+    int cursy, cursx;
+    getyx(stdscr, cursy, cursx);
+
+    if(dir < 0 && cursx > PROMPT_LEN)
+        --*cursor_offset;
+    else if(dir > 0 && cursx < PROMPT_LEN + xmax - (SCROLL_GAP * echo_start))
+        ++*cursor_offset;
+
+    move(cursy, cursx + *cursor_offset);
+}
+
+
+void insert_char(char *msgbuf, const char c, const int echo_start)
+{
+    // The index in the message buffer c is to be inserted.
+    unsigned insert_at = (getcurx(stdscr) - PROMPT_LEN) + (SCROLL_GAP * echo_start);
+    size_t msglen = strlen(msgbuf);
+
+    // Move characters to the right that are after the insertion point.
+    for(size_t i = msglen; i > insert_at; --i)
+        msgbuf[i] = msgbuf[i - 1];
+
+    msgbuf[insert_at] = c;
+    msgbuf[msglen + 1] = '\0';
 }

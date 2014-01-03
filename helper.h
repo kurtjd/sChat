@@ -6,8 +6,6 @@
 #include <string.h>
 #include "message.h"
 
-// Appends char c to string dest.
-void append(char *dest, const char c);
 
 // Moves the cursor by specified amount.
 void moveby(const int yinc, const int xinc);

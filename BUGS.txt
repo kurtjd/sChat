@@ -3,3 +3,5 @@
 -When pasting in text with multiple lines, the newline character is read and the message automatically sent.
 
 -When a message is longer than the screen, resizing the window messes up the scolling.
+
+-When inserting text in the middle of input causes the input to reach beyond the screen, problems arise.

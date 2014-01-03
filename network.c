@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#include "message.h"
 #include "network.h"
 
 int peer_start(int sockfd, const char *host, const char *port)
@@ -159,8 +160,8 @@ int peer_send(int sockfd, const char *message)
 int peer_recv(int sockfd)
 {
 	int r;
-	char buf[MAXMSGLEN];
-	if((r = recv(sockfd, buf, MAXMSGLEN, 0)) < 0){
+	char buf[MAX_MSG_LEN];
+	if((r = recv(sockfd, buf, MAX_MSG_LEN, 0)) < 0){
 		fprintf(stderr, "Error: Unable to receive message\n");
 		return 0;
 	}

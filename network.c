@@ -13,10 +13,10 @@
 
 #include "network.h"
 
-int peer_listen(const char *port)
+int peer_listen(int sockfd, const char *port)
 {
 
-	int sockfd;
+	int lsockfd;
 	socklen_t sockaddr_size = sizeof(struct sockaddr);
 
 	struct addrinfo server, *servinfo, *p;
@@ -39,12 +39,12 @@ int peer_listen(const char *port)
 
 	for(p = servinfo; p != NULL; p = p->ai_next){
 
-		if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
+		if((lsockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
 			fprintf(stderr, "Error: Unable to create socket\n");
 			return 0;
 		}
 
-		if(bind(sockfd, p->ai_addr, p->ai_addrlen) < 0){
+		if(bind(lsockfd, p->ai_addr, p->ai_addrlen) < 0){
 			fprintf(stderr, "Error: Bind\n");
 			close(sockfd);
 			continue;
@@ -67,7 +67,7 @@ int peer_listen(const char *port)
 	// Wait for a peer to connect to us.
 
 	while(1){
-		if( (main_sockfd = accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
+		if( (sockfd = accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
 			fprintf(stderr, "Error: could not accept connection from peer\n");
 			return 0;
 		}
@@ -85,7 +85,7 @@ int peer_listen(const char *port)
 	return 1;
 }
 
-int peer_connect(const char *host, const char *port)
+int peer_connect(int sockfd, const char *host, const char *port)
 {
 
 	struct addrinfo client, *servinfo, *p;
@@ -105,16 +105,16 @@ int peer_connect(const char *host, const char *port)
 
 		for(p = servinfo; p != NULL; p = p->ai_next) {
 
-			if((main_sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
+			if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
 				fprintf(stderr, "Error unable to create socket\n");
 				continue;
 			}
 
 			printf("Connecting to peer %s:%s\n",host,port);
 
-			if(connect(main_sockfd, p->ai_addr, p->ai_addrlen) < 0){
+			if(connect(sockfd, p->ai_addr, p->ai_addrlen) < 0){
 				fprintf(stderr, "Error: Connect\n");
-				close(main_sockfd);
+				close(sockfd);
 				continue;
 			}
 
@@ -130,9 +130,9 @@ int peer_connect(const char *host, const char *port)
 	return 1;
 }
 
-int peer_send(const char *message)
+int peer_send(int sockfd, const char *message)
 {
-	if((send(main_sockfd, message, strlen(message), 0)) < 0){
+	if((send(sockfd, message, strlen(message), 0)) < 0){
 		fprintf(stderr, "Error: Unable to send message: %s",message);	
 		return 0;
 	}
@@ -140,11 +140,11 @@ int peer_send(const char *message)
 	return 1;
 }
 
-int peer_recv(void)
+int peer_recv(int sockfd)
 {
 	int r;
 	char buf[MAXMSGLEN];
-	if((r = recv(main_sockfd, buf, MAXMSGLEN, 0)) < 0){
+	if((r = recv(sockfd, buf, MAXMSGLEN, 0)) < 0){
 		fprintf(stderr, "Error: Unable to receive message\n");
 		return 0;
 	}
@@ -152,7 +152,7 @@ int peer_recv(void)
 	return 1;
 }
 
-void peer_close(void)
+void peer_close(int sockfd)
 {
-	close(main_sockfd);
+	close(sockfd);
 }

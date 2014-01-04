@@ -59,4 +59,7 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf,
 // Does some checking before calling insert_char().
 void add_to_msg(char *msgbuf, const char c, int *echo_start);
 
+// Recalculates the echo_start variable.
+void reset_echo_start(int *echo_start, const char *msgbuf);
+
 #endif

@@ -177,7 +177,10 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *echo_start, int *
         cycle_sent_msg(-1, messages, msgbuf, prev_msg_on, echo_start, cursor_offset);
 
     else if(keyp == KEY_RESIZE)
+    {
         window_resize();
+        reset_echo_start(echo_start, msgbuf);   
+    }
 }
 
 
@@ -340,9 +343,6 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf,
 
     // Clear the message buffer and text in the input field.
     msgbuf[0] = '\0';
-    move(get_cursor(Y), PROMPT_LEN);
-    clrtoeol();
-    *echo_start = 0;
     *cursor_offset = 0;
 
     /* Loop through the previous messages until we find the one that matches what the user wants,
@@ -354,22 +354,11 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, char *msgbuf,
             ++i;
 
         if(i == *prev_msg_on)
-        {
-            /* Copy the previous message into the message buffer character-by-character.
-             * This is done to use some useful features of the add_to_msg() function we'll need.
-             * User input is also echo'd after each character copied in order to determine
-             * when the cursor is at the edge of the screen, thus changing the echo start.
-             * This also needs to be done in case a previous message cycled to was longer
-             * than the screen. */
-            size_t msglen = strlen(msg->txt);
-            for(unsigned c = 0; c < msglen; ++c)
-            {
-                add_to_msg(msgbuf, msg->txt[c], echo_start);
-                moveby(0, 1);
-                echo_user_input(msgbuf, *echo_start, cursor_offset);
-            }
-        }
+            strncpy(msgbuf, msg->txt, sizeof msg->txt);
     }
+    
+    // Need to reset echo_start in case the message is longer than the screen.
+    reset_echo_start(echo_start, msgbuf);
 }
 
 
@@ -381,5 +370,21 @@ void add_to_msg(char *msgbuf, const char c, int *echo_start)
 
         if(get_cursor(X) == (COLS - 1))
             change_echo_start(echo_start, 1);
+    }
+}
+
+
+void reset_echo_start(int *echo_start, const char *msgbuf)
+{
+    move(get_cursor(Y), PROMPT_LEN);
+    clrtoeol();
+    *echo_start = 0;
+
+    int msglen = strlen(msgbuf);
+    int screen_strlen = COLS - PROMPT_LEN;
+    if(msglen >= screen_strlen)
+    {
+        *echo_start = 1;
+        *echo_start += (msglen - (screen_strlen)) / SCROLL_GAP;
     }
 }

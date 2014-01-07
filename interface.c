@@ -97,7 +97,7 @@ void draw_input_field()
 void echo_user_input(const char *msgbuf, const int echo_start, int *cursor_offset)
 {
     move(LINES - 1, PROMPT_LEN);
-    printw("%s", msgbuf + (SCROLL_GAP * echo_start));
+    printw("%.*s", COLS - PROMPT_LEN - 1, msgbuf + (SCROLL_GAP * echo_start));
 
     // Moves the cursor back to it's offset position if the user has moved it.
     move_cursor(0, cursor_offset, strlen(msgbuf), echo_start);
@@ -151,8 +151,8 @@ void handle_input(char *msgbuf, MessageHistory *messages, int *echo_start, int *
     {
         backspace(msgbuf, *echo_start);
 
-        if(get_cursor(X) == (PROMPT_LEN + 1))
-            change_echo_start(echo_start, -1);
+        if(get_cursor(X) <= (PROMPT_LEN))
+            reset_echo_start(echo_start, msgbuf);   
     }
     else if(isprint(keyp))
         add_to_msg(msgbuf, keyp, echo_start);

@@ -5,8 +5,6 @@
 #include "txtfield.h"
 #include "message.h"
 
-#define INPUT_HEIGHTZ 2
-
 // Sets up the curses environment with preferred settings.
 void init_curses(void);
 
@@ -31,7 +29,7 @@ void change_hist_start(const int dir, int *hist_start, const MessageHistory *mes
 // Returns the total number of lines of all messages in the history.
 int get_hist_lines_total(const MessageHistory *messages);
 
-// Copies a previously sent message into the current message buffer.
+// Copies a previously sent message into the text field.
 void cycle_sent_msg(const int dir, const MessageHistory *messages, TxtField *txtbox, int *prev_msg_on);
 
 #endif

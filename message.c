@@ -24,13 +24,11 @@ void add_message(MessageHistory *messages, const int sender, const time_t timest
 
     Message *new_msg = new_message(messages, sender, timestamp, msg);
 
-    if(!messages->first_msg)
-    {
+    if(!messages->first_msg) {
         messages->first_msg = new_msg;
-    }
-    else if(messages->msg_count >= messages->max_history)  // If at max history, gotta make room.
-    {
-        /* first_msg now points to what was the second message.
+    } else if(messages->msg_count >= messages->max_history) {
+        /* If at max history, gotta make room.
+         * first_msg now points to what was the second message.
          * the original first_msg has been freed and deleted. */
         messages->first_msg = pop_front(messages);
     }
@@ -52,8 +50,7 @@ void clear_history(MessageHistory *messages)
         clean_exit(EXIT_FAILURE, NULL);
 
     Message *msg = messages->first_msg;
-    while(msg)
-    {
+    while(msg) {
         Message *tmp = msg->next_msg;
         free(msg);
         msg = tmp;

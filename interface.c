@@ -7,6 +7,7 @@
 #include "message.h"
 #include "txtfield.h"
 
+#define INPUT_HEIGHTZ 2  // Temporary for history functions.
 
 void init_curses(void)
 {
@@ -42,15 +43,13 @@ void show_message_history(const MessageHistory *messages, int *hist_start)
      * Whether or not the screen is full determines if we go backwards or forwards. */
     // Note: if the max history is really short, when a long message is deleted the screen needs to be cleared.
     Message *msg = screenfull ? messages->last_msg : messages->first_msg;
-    while(msg)
-    {
+    while(msg) {
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
         int msglines = (strlen(final_msg) / COLS) + 1;
 
-        if(screenfull)
+        if(screenfull) {
             print_lines(final_msg, msglines, &starty, &line_on, *hist_start);
-        else
-        {
+        } else {
            /* If the user tried to change the history start position while the screen
              * wasn't full, this puts it back to 0. It would make more sense for this check
              * to be in change_hist_start(), but since screenfull is not global, there
@@ -70,8 +69,7 @@ void show_message_history(const MessageHistory *messages, int *hist_start)
 
     /* If the window was made larger, and the entire history
      * now fits on the screen, we need to change screenfull back to 0. */
-    if(screenfull && starty > 0)
-    {
+    if(screenfull && starty > 0) {
         clear();  // If we don't, the old messages will still be at the bottom.
         screenfull = 0;
     }
@@ -91,8 +89,7 @@ void handle_input(TxtField *txtbox, MessageHistory *messages, int *hist_start, i
         return;  // No key pressed.
 
     // Enter key returns '\n', and don't send blank messages.
-    if(keyp == '\n' && txtbox->length > 0)
-    {
+    if(keyp == '\n' && txtbox->length > 0) {
         // Just a quick and temporary solution to allow for clean exit.
         if(strcmp(txtbox->contents, "/q") == 0)
             clean_exit(EXIT_SUCCESS, messages);
@@ -100,10 +97,8 @@ void handle_input(TxtField *txtbox, MessageHistory *messages, int *hist_start, i
         add_message(messages, FROM_SELF, time(0), txtbox->contents);
         *prev_msg_on = 0;
         tf_clear(txtbox);
-    }
-
-    // There are multiple keys representing backspace.
-    else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)
+    } else if(keyp == KEY_BACKSPACE || keyp == 127 || keyp == 8)
+        // There are multiple keys representing backspace.
         tf_backspace(txtbox);
     else if(isprint(keyp))
         tf_insert(txtbox, keyp);
@@ -123,8 +118,7 @@ void handle_input(TxtField *txtbox, MessageHistory *messages, int *hist_start, i
     else if (keyp == KEY_DOWN)
         cycle_sent_msg(-1, messages, txtbox, prev_msg_on);
 
-    else if(keyp == KEY_RESIZE)
-    {
+    else if(keyp == KEY_RESIZE) {
         window_resize();
         tf_scale(txtbox, 0, LINES - 1, COLS);
         tf_reset_echo(txtbox);
@@ -136,10 +130,8 @@ void print_lines(const char *msg, const int msglines, int *starty, int *line_on,
     /* Display each line from the bottom-up.
      * starty is checked because attempting to move the cursor
      * beyond the screen and then drawing causes problems. */
-    for(int line = msglines; line > 0 && *starty >= 0; --line)
-    {
-        if(*line_on >= hist_start)
-        {
+    for(int line = msglines; line > 0 && *starty >= 0; --line) {
+        if(*line_on >= hist_start) {
             // Position cursor and clear all previous text on the line.
             move((*starty)--, 0);
             clrtoeol();
@@ -157,8 +149,7 @@ void print_message(char *msg, const int msglines, const int maxlines, int *scree
 {
     *starty += msglines;
 
-    if(*starty > maxlines)
-    {
+    if(*starty > maxlines) {
         *screenfull = 1;
         free(msg);
         return;
@@ -191,8 +182,7 @@ int get_hist_lines_total(const MessageHistory *messages)
 {
     int total_lines = 0;
 
-    for(Message *msg = messages->first_msg; msg != NULL; msg = msg->next_msg)
-    {
+    for(Message *msg = messages->first_msg; msg != NULL; msg = msg->next_msg) {
         char *final_msg = format_message(messages, msg->sender, msg->timestamp, msg->txt);
         total_lines += ((strlen(final_msg) / COLS) + 1);
         free(final_msg);
@@ -204,15 +194,12 @@ int get_hist_lines_total(const MessageHistory *messages)
 void cycle_sent_msg(const int dir, const MessageHistory *messages, TxtField *txtbox, int *prev_msg_on)
 {
     // Cycle between previously sent messages.
-    if(dir < 0)
-    {
+    if(dir < 0) {
         if(*prev_msg_on > 0)
             --*prev_msg_on;
         else
             *prev_msg_on = messages->msg_count;
-    }
-    else if(dir > 0)
-    {
+    } else if(dir > 0) {
         if(*prev_msg_on < messages->msg_count)
             ++*prev_msg_on;
         else
@@ -225,8 +212,7 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, TxtField *txt
     /* Loop through the previous messages until we find the one that matches what the user wants,
      * and then place it into the message buffer. */
     int i = 0;
-    for(Message *msg = messages->last_msg; i != *prev_msg_on; msg = msg->prev_msg)
-    {
+    for(Message *msg = messages->last_msg; i != *prev_msg_on; msg = msg->prev_msg) {
         if(msg->sender == FROM_SELF)
             ++i;
 

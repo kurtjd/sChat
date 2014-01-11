@@ -31,15 +31,14 @@ int main(int argc, char *argv[])
     history_init(&messages, 250);  // Sets max history to 250 for now.
 
     // Create and initialize the single text field to be used for input.
-    TxtField txtbox;
-    tf_init(&txtbox, 0, LINES - 1, COLS, MAX_MSG_LEN);
+    TxtField input_field;
+    tf_init(&input_field, 0, LINES - 1, COLS, MAX_MSG_LEN);
     
-    while(1)
-    {
-        tf_draw(&txtbox);
+    while(1) {
+        tf_draw(&input_field);
         show_message_history(&messages, &hist_start);
-        tf_echo(&txtbox);
-        handle_input(&txtbox, &messages, &hist_start, &prev_msg_on);
+        tf_echo(&input_field);
+        handle_input(&input_field, &messages, &hist_start, &prev_msg_on);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,

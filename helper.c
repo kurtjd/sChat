@@ -36,10 +36,10 @@ void clean_exit(const int status, const MessageHistory *messages)
 }
 
 
-int get_cursor(int plane)
+unsigned get_cursor(const int axis)
 {
     int cury, curx;
     getyx(stdscr, cury, curx);
 
-    return (plane == Y) ? cury : curx;
+    return (axis == Y) ? cury : curx;
 }

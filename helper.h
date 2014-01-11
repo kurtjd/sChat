@@ -20,6 +20,6 @@ void* safe_malloc(const size_t size, const MessageHistory *messages);
 void clean_exit(const int status, const MessageHistory *messages);
 
 // Returns either the X or Y position of the cursor.
-int get_cursor(int plane);
+unsigned get_cursor(const int axis);
 
 #endif

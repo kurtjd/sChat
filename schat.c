@@ -2,14 +2,17 @@
 #include <stdio.h>
 #include "xcurses.h"
 #include "interface.h"
+#include "txtfield.h"
 #include "network.h"
 #include "message.h"
 #include "helper.h"
 
 
 // Show usage banner
-void show_banner(void);
-
+void show_banner(void)
+{
+    printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
+}
 
 int main(int argc, char *argv[])
 {
@@ -20,24 +23,23 @@ int main(int argc, char *argv[])
  
     init_curses();
 
-    /* As the user types, each character returned by getch() is stored here
-     * until he presses enter. Then the message is sent and the buffer reset. */
-    char msgbuf[MAX_MSG_LEN] = "";
-    int echo_start = 0;  // Which character in the user input to start echoing.
-    int cursor_offset = 0;  // Where the cursor is positioned realtive to the end of input.
     int hist_start = 0;  // Where in the history to begin showing messages.
     int prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
 
     // Create and initialize the message history 'queue'.
     MessageHistory messages;
     history_init(&messages, 250);  // Sets max history to 250 for now.
+
+    // Create and initialize the single text field to be used for input.
+    TxtField txtbox;
+    tf_init(&txtbox, 0, LINES - 1, COLS, MAX_MSG_LEN);
     
     while(1)
     {
-        draw_input_field();
+        tf_draw(&txtbox);
         show_message_history(&messages, &hist_start);
-        echo_user_input(msgbuf, echo_start, &cursor_offset);
-        handle_input(msgbuf, &messages, &echo_start, &cursor_offset, &hist_start, &prev_msg_on);
+        tf_echo(&txtbox);
+        handle_input(&txtbox, &messages, &hist_start, &prev_msg_on);
 
         /* This only updates part of the screen to change,
          * and since I'm careful to only change when necessary,
@@ -46,10 +48,4 @@ int main(int argc, char *argv[])
     }
 
     clean_exit(EXIT_SUCCESS, &messages);  // Should never get to here...
-}
-
-
-void show_banner(void)
-{
-    printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
 }

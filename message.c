@@ -28,7 +28,7 @@ static char* msg_format(const unsigned sender, const time_t timestamp, const cha
 
 Message* msg_new(LinkedList *messages, const unsigned sender, const time_t timestamp, const char *msg)
 {
-    Message *new_msg = malloc(sizeof(Message));
+    Message *new_msg = malloc(sizeof *new_msg);
 
     new_msg->sender = sender;
     new_msg->timestamp = timestamp;

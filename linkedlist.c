@@ -4,7 +4,7 @@
 // Creates a new node.
 static Node* list_new_node(LinkedList *list, void *value)
 {
-    Node *node = malloc(sizeof(Node));
+    Node *node = malloc(sizeof *node);
     if(node == NULL)
         return NULL;
 

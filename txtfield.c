@@ -34,7 +34,7 @@ void tf_insert(TxtField *tf, const char c)
     if (tf->length >= (tf->MAXLEN - 1))
         return;
 
-    // The index in the message buffer c is to be inserted.
+    // The index in the text buffer c is to be inserted.
     unsigned insert_at = TF_CURSOR_POS + ECHO_OFFSET;
 
     // Move characters to the right that are after the insertion point.

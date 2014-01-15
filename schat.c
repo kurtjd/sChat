@@ -40,5 +40,5 @@ int main()
         doupdate();  // Update all windows at once rather than individually.
     }
 
-    clean_exit(EXIT_SUCCESS, &messages);  // Should never get to here...
+    clean_exit(EXIT_SUCCESS, &messages, &chatpane, &input_field);  // Should never get to here...
 }

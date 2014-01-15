@@ -20,6 +20,7 @@ void sp_init(ScrollPane *sp, const unsigned xpos, const unsigned ypos, const uns
 void sp_destroy(ScrollPane *sp)
 {
     delwin(sp->win);
+    sp->win = NULL;
 }
 
 void sp_print(ScrollPane *sp, const char *txt)

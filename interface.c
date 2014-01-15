@@ -22,7 +22,7 @@ void init_curses(void)
 void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on)
 {
     if (messages == NULL)
-        clean_exit(EXIT_FAILURE, NULL);
+        return;
 
     int keyp = getch();
 
@@ -37,7 +37,7 @@ void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *
 
         // Just a quick and temporary solution to allow for clean exit.
         if (strcmp(tf->value, "/q") == 0)
-            clean_exit(EXIT_SUCCESS, messages);
+            clean_exit(EXIT_SUCCESS, messages, sp, tf);
 
         // Add the message to history then print it.
         Message *msg = msg_new(messages, FROM_SELF, time(0), tf->value);

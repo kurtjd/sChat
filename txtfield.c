@@ -15,7 +15,8 @@ void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_
     tf->MAXLEN = maxlen;
     tf->SCROLL_GAP = 20;  // May make this dynamic in the future!
 
-    tf->value = malloc(maxlen + 1);  // Handle failure in future!
+    tf->value = calloc(maxlen + 1, sizeof(char));  // Handle failure in future!
+
     tf->length = 0;
 
     tf->echo_start = 0;
@@ -27,6 +28,7 @@ void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_
 void tf_destroy(TxtField *tf)
 {
     free(tf->value);
+    tf->value = NULL;
 }
 
 void tf_insert(TxtField *tf, const char c)

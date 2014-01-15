@@ -76,6 +76,8 @@ void list_clear(LinkedList *list)
     Node *node = list->first;
     while (node) {
         Node *tmp = node->next;
+        free(node->value);
+        node->value = NULL;
         free(node);
         node = tmp;
     }

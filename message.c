@@ -17,7 +17,7 @@ static char* msg_format(const unsigned sender, const time_t timestamp, const cha
 
     /* Allocate enough space to hold the name along with the message.
     * +1 to account for null character. */
-    char *message = malloc(strlen(msg_sender) + strlen(msg) + 1);
+    char *message = calloc(strlen(msg_sender) + strlen(msg) + 1, sizeof(char));
 
     // Then copy individual strings into message.
     strncpy(message, msg_sender, sizeof msg_sender);
@@ -46,6 +46,7 @@ void msg_print(const Message *message, ScrollPane *sp)
     char *msg = msg_format(message->sender, message->timestamp, message->txt);
     sp_print(sp, msg);
     free(msg);
+    msg = NULL;
 }
 
 // The below two functions will be going away once ScrollPane is complete.
@@ -73,6 +74,7 @@ int msg_all_linec(const LinkedList *messages, const size_t screenw)
 
         total_lines += ((strlen(final_msg) / screenw) + 1);
         free(final_msg);
+        final_msg = NULL;
     }
 
     return total_lines;

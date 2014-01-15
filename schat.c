@@ -3,6 +3,7 @@
 #include "xcurses.h"
 #include "interface.h"
 #include "txtfield.h"
+#include "scrollpane.h"
 #include "network.h"
 #include "message.h"
 #include "helper.h"
@@ -23,27 +24,25 @@ int main(int argc, char *argv[])
  
     init_curses();
 
-    int hist_start = 0;  // Where in the history to begin showing messages.
-    int prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
+    unsigned prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
 
-    // Create and initialize the message history 'queue'.
+    // Initialize the message history 'queue'.
     MessageHistory messages;
-    history_init(&messages, 250);  // Sets max history to 250 for now.
+    hist_init(&messages, 250);  // Sets max history to 250 for now.
 
-    // Create and initialize the single text field to be used for input.
+    // Initializes the window where all chat messages will appear.
+    ScrollPane chatpane;
+    sp_init(&chatpane, 0, 0, COLS, LINES - 1);
+
+    // Initialize the sole text field to be used for input.
     TxtField input_field;
     tf_init(&input_field, 0, LINES - 1, COLS, MAX_MSG_LEN);
     
-    while(1) {
+    while (1) {
         tf_draw(&input_field);
-        show_message_history(&messages, &hist_start);
-        tf_echo(&input_field);
-        handle_input(&input_field, &messages, &hist_start, &prev_msg_on);
+        handle_input(&messages, &chatpane, &input_field, &prev_msg_on);
 
-        /* This only updates part of the screen to change,
-         * and since I'm careful to only change when necessary,
-         * this is efficient. */
-        refresh();
+        doupdate();  // Update all windows at once rather than individually.
     }
 
     clean_exit(EXIT_SUCCESS, &messages);  // Should never get to here...

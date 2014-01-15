@@ -4,127 +4,137 @@
 #include "xcurses.h"
 #include "helper.h"
 
-#define ECHO_OFFSET (txtbox->SCROLL_GAP * txtbox->echo_start)
-#define TF_CURSOR_POS (get_cursor(X) - txtbox->XPOS)
+#define ECHO_OFFSET (tf->SCROLL_GAP * tf->echo_start)
+#define TF_CURSOR_POS (get_cursor(X) - tf->XPOS)
 
-void tf_init(TxtField *txtbox, const unsigned xpos, const unsigned ypos, const size_t width, const size_t maxlen)
+void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_t width, const size_t maxlen)
 {
-    tf_scale(txtbox, xpos, ypos, width);
-    txtbox->HEIGHT = 1;
+    tf->HEIGHT = 1;
 
-    txtbox->MAXLEN = maxlen;
-    txtbox->SCROLL_GAP = 20;
+    tf->MAXLEN = maxlen;
+    tf->SCROLL_GAP = 20;  // May make this dynamic.
 
-    txtbox->contents = malloc(maxlen + 1);  // MAKE SURE TO FREE ON EXIT!
-    txtbox->length = 0;
+    tf->contents = malloc(maxlen + 1);
+    tf->length = 0;
 
-    txtbox->echo_start = 0;
-    txtbox->cursor_offset = 0;
+    tf->echo_start = 0;
+    tf->cursor_offset = 0;
+
+    tf_scale(tf, xpos, ypos, width);
 }
 
-void tf_insert(TxtField *txtbox, const char c)
+void tf_destroy(TxtField *tf)
 {
-    if(txtbox->length >= (txtbox->MAXLEN - 1))
+    free(tf->contents);
+}
+
+void tf_insert(TxtField *tf, const char c)
+{
+    if (tf->length >= (tf->MAXLEN - 1))
         return;
 
     // The index in the message buffer c is to be inserted.
     unsigned insert_at = TF_CURSOR_POS + ECHO_OFFSET;
 
     // Move characters to the right that are after the insertion point.
-    for(size_t i = txtbox->length; i > insert_at; --i)
-        txtbox->contents[i] = txtbox->contents[i - 1];
+    for (size_t i = tf->length; i > insert_at; --i)
+        tf->contents[i] = tf->contents[i - 1];
 
-    txtbox->contents[insert_at] = c;
-    txtbox->contents[txtbox->length + 1] = '\0';
-    ++txtbox->length;
+    tf->contents[insert_at] = c;
+    tf->contents[tf->length + 1] = '\0';
+    ++tf->length;
 
-    if(get_cursor(X) == (txtbox->XPOS + txtbox->WIDTH - 1))
-        tf_reset_echo(txtbox);
+    if (get_cursor(X) == (tf->XPOS + tf->WIDTH - 1))
+        tf_reset_echo(tf);
 }
 
-void tf_set(TxtField *txtbox, const char *str)
+void tf_set(TxtField *tf, const char *str)
 {
-    strncpy(txtbox->contents, str, strlen(str) + 1);
-    txtbox->length = strlen(str);
+    strncpy(tf->contents, str, strlen(str) + 1);
+    tf->length = strlen(str);
 }
 
-void tf_backspace(TxtField *txtbox)
+void tf_backspace(TxtField *tf)
 {
     // Don't want this function running if there is no input.
-    if(txtbox->length < 1)
+    if (tf->length < 1)
         return;
 
     // The index in the message buffer to perform deletion.
     unsigned delete_at = (TF_CURSOR_POS - 1) + ECHO_OFFSET;
 
-    for(size_t i = delete_at; i < txtbox->length; ++i)
-        txtbox->contents[i] = txtbox->contents[i + 1];
+    for (size_t i = delete_at; i < tf->length; ++i)
+        tf->contents[i] = tf->contents[i + 1];
 
     moveby(0, -1);
     delch();
-    --txtbox->length;
+    --tf->length;
 
-    if(get_cursor(X) <= txtbox->XPOS)
-        tf_reset_echo(txtbox);
+    if (get_cursor(X) <= tf->XPOS)
+        tf_reset_echo(tf);
         /* Remember: This can cause prompt to be removed by tf_backspace if cursor offset is not 0.
          * Will fix after fixing the issue with inserting text in the middle of the message. */
 }
 
-void tf_clear(TxtField *txtbox)
+void tf_clear(TxtField *tf)
 {
-    move(txtbox->YPOS, txtbox->XPOS);
+    move(tf->YPOS, tf->XPOS);
 
     clrtoeol();
 
-    txtbox->echo_start = 0;
-    txtbox->cursor_offset = 0;
+    tf->echo_start = 0;
+    tf->cursor_offset = 0;
 
-    txtbox->contents[0] = '\0';
-    txtbox->length = 0;
+    tf->contents[0] = '\0';
+    tf->length = 0;
 }
 
-void tf_echo(TxtField *txtbox)
+void tf_draw(TxtField *tf)
 {
-    move(txtbox->YPOS, txtbox->XPOS);
-    printw("%s", txtbox->contents + ECHO_OFFSET);
+    tf_draw_border(tf);
+
+    move(tf->YPOS, tf->XPOS);
+    printw("%s", tf->contents + ECHO_OFFSET);
 
     // Moves the cursor back to it's offset position if the user has moved it.
-    tf_move_cursor(txtbox, 0);
+    tf_move_cursor(tf, 0);
 }
 
-void tf_reset_echo(TxtField *txtbox)
+void tf_reset_echo(TxtField *tf)
 {
-    move(txtbox->YPOS, txtbox->XPOS);
+    move(tf->YPOS, tf->XPOS);
     clrtoeol();
-    txtbox->echo_start = 0;
+    tf->echo_start = 0;
 
     /* Basically calculates how many times the user would've typed past the width
      * of the text field, and then sets echo_start to that value. */
-    if(txtbox->length >= txtbox->WIDTH)
-        txtbox->echo_start = 1 + ((txtbox->length - (txtbox->WIDTH)) / txtbox->SCROLL_GAP);
+    if (tf->length >= tf->WIDTH)
+        tf->echo_start = 1 + ((tf->length - (tf->WIDTH)) / tf->SCROLL_GAP);
 }
 
-void tf_move_cursor(TxtField *txtbox, const int dir)
+void tf_move_cursor(TxtField *tf, const int dir)
 {
-    if(dir < 0 && get_cursor(X) > txtbox->XPOS)
-        --txtbox->cursor_offset;
-    else if(dir > 0 && txtbox->cursor_offset < 0)
-        ++txtbox->cursor_offset;
+    if (dir < 0 && get_cursor(X) > tf->XPOS)
+        --tf->cursor_offset;
+    else if (dir > 0 && tf->cursor_offset < 0)
+        ++tf->cursor_offset;
 
-    move(txtbox->YPOS, get_cursor(X) + txtbox->cursor_offset);
+    move(tf->YPOS, get_cursor(X) + tf->cursor_offset);
 }
 
-void tf_scale(TxtField *txtbox, const unsigned newx, const unsigned newy, const unsigned newwidth)
+void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsigned newwidth)
 {
-    txtbox->XPOS = newx;
-    txtbox->YPOS = newy;
-    txtbox->WIDTH = newwidth;
+    tf->XPOS = newx;
+    tf->YPOS = newy;
+    tf->WIDTH = newwidth;
+
+    tf_reset_echo(tf);
 }
 
-void tf_draw(const TxtField *txtbox)
+void tf_draw_border(const TxtField *tf)
 {
-    move(txtbox->YPOS - 1, txtbox->XPOS);
+    move(tf->YPOS - 1, tf->XPOS);
 
-    for(size_t i = 0; i < txtbox->WIDTH; ++i)
+    for (size_t i = 0; i < tf->WIDTH; ++i)
         addch('_');
 }

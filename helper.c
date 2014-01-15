@@ -8,7 +8,7 @@
 
 void moveby(const int yinc, const int xinc)
 {
-    int cury, curx;
+    unsigned cury, curx;
     getyx(stdscr, cury, curx);  // Gets current cursor position.
     move(cury + yinc, curx + xinc);
 }
@@ -17,7 +17,7 @@ void moveby(const int yinc, const int xinc)
 void* safe_malloc(const size_t size, const MessageHistory *messages)
 {
     void *newmem = malloc(size);
-    if(!newmem)
+    if (!newmem)
         clean_exit(EXIT_FAILURE, messages);
 
     return newmem;
@@ -26,10 +26,10 @@ void* safe_malloc(const size_t size, const MessageHistory *messages)
 
 void clean_exit(const int status, const MessageHistory *messages)
 {
-    if(messages)
+    if (messages)
         /* Cast away const from messages. This is done so the other functions which
          * call clean_exit() can use a const version of messages. */
-        clear_history((MessageHistory *)messages);
+        hist_clear((MessageHistory *)messages);
 
     endwin();
     exit(status);
@@ -38,7 +38,7 @@ void clean_exit(const int status, const MessageHistory *messages)
 
 unsigned get_cursor(const int axis)
 {
-    int cury, curx;
+    unsigned cury, curx;
     getyx(stdscr, cury, curx);
 
     return (axis == Y) ? cury : curx;

@@ -4,6 +4,8 @@
 #define MESSAGE_H
 
 #include <time.h>
+#include <string.h>
+#include "scrollpane.h"
 
 #define MAX_MSG_LEN 500
 
@@ -23,40 +25,36 @@ struct Message
 {
     Message *next_msg;
     Message *prev_msg;
-    int sender;  // Either FROM_SELF or FROM_PEER.
+    unsigned sender;  // Either FROM_SELF or FROM_PEER.
     time_t timestamp;
     char txt[MAX_MSG_LEN];
 };
 
 typedef struct
 {
-    int max_history;
-    int msg_count;  // A count of messages aka size of history.
+    unsigned max_history;
+    unsigned msg_count;  // A count of messages aka size of history.
     Message *first_msg;
     Message *last_msg;
 } MessageHistory;
 
 
 // Initializes the message history.
-void history_init(MessageHistory *messages, const int max_history);
+void hist_init(MessageHistory *messages, const unsigned max_history);
 
-// Adds a message to the message history to be displayed.
-void add_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
+// Adds a message to the message history to be displayed, then returns a pointer to it.
+Message* hist_add_message(MessageHistory *messages, const unsigned sender, const time_t timestamp, const char *msg);
 
 // Frees all memory in the linked list.
-void clear_history(MessageHistory *messages);
+void hist_clear(MessageHistory *messages);
 
-// Returns a formatted message ready to be printed.
-char* format_message(const MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
+// Prints all messages to the chat pane.
+void hist_print_messages(const MessageHistory *messages, ScrollPane *sp);
 
+// Returns the total number of lines of all messages in the history.
+int hist_get_linecount(const MessageHistory *messages, const size_t screenw);
 
-/* BELOW FUNCTIONS ARE INTERNAL USE ONLY. SHOULD NOT BE USED OUTSIDE THIS LIBRARY. */
-
-// Creates a new instance of the Message struct on the heap.
-Message* new_message(MessageHistory *messages, const int sender, const time_t timestamp, const char *msg);
-
-/* When a new message is added and the history limit is at its max, delete the oldest message.
- * Also returns the 2nd message to be set as the new first message. */
-Message* pop_front(MessageHistory *messages);
+// Prints a single message to the chatpane.
+void msg_print(const MessageHistory *messages, const Message *message, ScrollPane *sp);
 
 #endif

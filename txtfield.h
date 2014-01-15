@@ -21,33 +21,36 @@ typedef struct
 } TxtField;
 
 // Initializes a new text field.
-void tf_init(TxtField *txtbox, const unsigned xpos, const unsigned ypos, const size_t width, const size_t maxlen);
+void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_t width, const size_t maxlen);
+
+// Performs cleanup.
+void tf_destroy(TxtField *tf);
 
 // Inserts a character into the textfield at the current cursor position.
-void tf_insert(TxtField *txtbox, const char c);
+void tf_insert(TxtField *tf, const char c);
 
 // Sets the contents of the textfield to a specified string.
-void tf_set(TxtField *txtbox, const char *str);
+void tf_set(TxtField *tf, const char *str);
 
 // Deletes the char before the cursor from textfield and from the screen.
-void tf_backspace(TxtField *txtbox);
+void tf_backspace(TxtField *tf);
 
 // Clears the textfield and the echo'd input from the screen.
-void tf_clear(TxtField *txtbox);
+void tf_clear(TxtField *tf);
 
 // Echo back what the user is currently typing.
-void tf_echo(TxtField *txtbox);
+void tf_draw(TxtField *tf);
 
 // Recalculates the echo_start variable.
-void tf_reset_echo(TxtField *txtbox);
+void tf_reset_echo(TxtField *tf);
 
 // Moves the cursor for input. Called when the left or right key is pressed.
-void tf_move_cursor(TxtField *txtbox, const int dir);
+void tf_move_cursor(TxtField *tf, const int dir);
 
 // Resizes and repositions the text field.
-void tf_scale(TxtField *txtbox, const unsigned newx, const unsigned newy, const unsigned newwidth);
+void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsigned newwidth);
 
 // Draws a horizontal line across the screen, separating the message pane from the input 'field'.
-void tf_draw(const TxtField *txtbox);
+void tf_draw_border(const TxtField *tf);
 
 #endif

@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
-#include "txtfield.h"
 #include "xcurses.h"
+#include "txtfield.h"
 #include "helper.h"
 
+// These calculations are used multiple times, so they are better off as macros.
 #define ECHO_OFFSET (tf->SCROLL_GAP * tf->echo_start)
 #define TF_CURSOR_POS (get_cursor(X) - tf->XPOS)
 
@@ -12,9 +13,9 @@ void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_
     tf->HEIGHT = 1;
 
     tf->MAXLEN = maxlen;
-    tf->SCROLL_GAP = 20;  // May make this dynamic.
+    tf->SCROLL_GAP = 20;  // May make this dynamic in the future!
 
-    tf->contents = malloc(maxlen + 1);
+    tf->value = malloc(maxlen + 1);  // Handle failure in future!
     tf->length = 0;
 
     tf->echo_start = 0;
@@ -25,7 +26,7 @@ void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_
 
 void tf_destroy(TxtField *tf)
 {
-    free(tf->contents);
+    free(tf->value);
 }
 
 void tf_insert(TxtField *tf, const char c)
@@ -38,10 +39,10 @@ void tf_insert(TxtField *tf, const char c)
 
     // Move characters to the right that are after the insertion point.
     for (size_t i = tf->length; i > insert_at; --i)
-        tf->contents[i] = tf->contents[i - 1];
+        tf->value[i] = tf->value[i - 1];
 
-    tf->contents[insert_at] = c;
-    tf->contents[tf->length + 1] = '\0';
+    tf->value[insert_at] = c;
+    tf->value[tf->length + 1] = '\0';
     ++tf->length;
 
     if (get_cursor(X) == (tf->XPOS + tf->WIDTH - 1))
@@ -50,7 +51,7 @@ void tf_insert(TxtField *tf, const char c)
 
 void tf_set(TxtField *tf, const char *str)
 {
-    strncpy(tf->contents, str, strlen(str) + 1);
+    strncpy(tf->value, str, strlen(str) + 1);
     tf->length = strlen(str);
 }
 
@@ -64,7 +65,7 @@ void tf_backspace(TxtField *tf)
     unsigned delete_at = (TF_CURSOR_POS - 1) + ECHO_OFFSET;
 
     for (size_t i = delete_at; i < tf->length; ++i)
-        tf->contents[i] = tf->contents[i + 1];
+        tf->value[i] = tf->value[i + 1];
 
     moveby(0, -1);
     delch();
@@ -85,7 +86,7 @@ void tf_clear(TxtField *tf)
     tf->echo_start = 0;
     tf->cursor_offset = 0;
 
-    tf->contents[0] = '\0';
+    tf->value[0] = '\0';
     tf->length = 0;
 }
 
@@ -94,7 +95,7 @@ void tf_draw(TxtField *tf)
     tf_draw_border(tf);
 
     move(tf->YPOS, tf->XPOS);
-    printw("%s", tf->contents + ECHO_OFFSET);
+    printw("%s", tf->value + ECHO_OFFSET);
 
     // Moves the cursor back to it's offset position if the user has moved it.
     tf_move_cursor(tf, 0);
@@ -131,6 +132,7 @@ void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsi
     tf_reset_echo(tf);
 }
 
+// Will probably get rid of this in the future.
 void tf_draw_border(const TxtField *tf)
 {
     move(tf->YPOS - 1, tf->XPOS);

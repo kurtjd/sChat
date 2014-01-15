@@ -1,9 +1,8 @@
 #include <string.h>
-#include "scrollpane.h"
 #include "xcurses.h"
 #include "txtfield.h"
+#include "scrollpane.h"
 #include "helper.h"
-
 
 void sp_init(ScrollPane *sp, const unsigned xpos, const unsigned ypos, const unsigned width, const unsigned height)
 {

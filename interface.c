@@ -3,11 +3,12 @@
 #include <ctype.h>
 #include <time.h>
 #include "xcurses.h"
-#include "helper.h"
 #include "interface.h"
+#include "txtfield.h"
 #include "scrollpane.h"
 #include "message.h"
-#include "txtfield.h"
+#include "linkedlist.h"
+#include "helper.h"
 
 void init_curses(void)
 {
@@ -18,7 +19,7 @@ void init_curses(void)
     nodelay(stdscr, 1);  // Makes getch() non-blocking.
 }
 
-void handle_input(MessageHistory *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on)
+void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on)
 {
     if (messages == NULL)
         clean_exit(EXIT_FAILURE, NULL);
@@ -35,12 +36,12 @@ void handle_input(MessageHistory *messages, ScrollPane *sp, TxtField *tf, unsign
             break;
 
         // Just a quick and temporary solution to allow for clean exit.
-        if (strcmp(tf->contents, "/q") == 0)
+        if (strcmp(tf->value, "/q") == 0)
             clean_exit(EXIT_SUCCESS, messages);
 
         // Add the message to history then print it.
-        Message *msg = hist_add_message(messages, FROM_SELF, time(0), tf->contents);
-        msg_print(messages, msg, sp);
+        Message *msg = msg_new(messages, FROM_SELF, time(0), tf->value);
+        msg_print(msg, sp);
 
         *prev_msg_on = 0;
         tf_clear(tf);
@@ -55,12 +56,12 @@ void handle_input(MessageHistory *messages, ScrollPane *sp, TxtField *tf, unsign
 
     case KEY_C_UP:
         sp_scroll(sp, 1);
-        hist_print_messages(messages, sp);
+        msg_print_all(messages, sp);
         break;
 
     case KEY_C_DOWN:
         sp_scroll(sp, -1);
-        hist_print_messages(messages, sp);
+        msg_print_all(messages, sp);
         break;
 
     case KEY_LEFT:
@@ -100,16 +101,17 @@ void window_resize(void)
     clear();
 }
 
-void cycle_sent_msg(const int dir, const MessageHistory *messages, TxtField *tf, unsigned *prev_msg_on)
+// This needs to go somewhere else. It is only temporary.
+void cycle_sent_msg(const int dir, const LinkedList *messages, TxtField *tf, unsigned *prev_msg_on)
 {
     // Cycle between previously sent messages.
     if (dir < 0) {
         if (*prev_msg_on >= 1)
             --*prev_msg_on;
         else
-            *prev_msg_on = messages->msg_count;
+            *prev_msg_on = messages->size;
     } else if (dir > 0) {
-        if (*prev_msg_on < messages->msg_count)
+        if (*prev_msg_on < messages->size)
             ++*prev_msg_on;
         else
             *prev_msg_on = 0;
@@ -120,11 +122,11 @@ void cycle_sent_msg(const int dir, const MessageHistory *messages, TxtField *tf,
 
     /* Loop through the previous messages until we find the one that matches what the user wants,
      * and then place it into the message buffer. */
-    Message *msg = messages->last_msg;
-    for (unsigned i = 0; i != *prev_msg_on; msg = msg->prev_msg) {
+    Node *node = messages->last;
+    for (unsigned i = 0; i != *prev_msg_on; node = node->prev) {
+        const Message *msg = node->value;
         if (msg->sender == FROM_SELF)
             ++i;
-
         if (i == *prev_msg_on)
             tf_set(tf, msg->txt);
     }

@@ -1,7 +1,7 @@
 #ifndef TXTFIELD_H
 #define TXTFIELD_H
 
-#include <string.h>
+#include <stdlib.h>
 
 typedef struct
 {
@@ -13,7 +13,7 @@ typedef struct
     size_t MAXLEN;
     size_t SCROLL_GAP;  // How much space the textfield should scroll by when input reaches width.
 
-    char *contents;
+    char *value;
     size_t length;
 
     unsigned echo_start;  // The position in the input to begin echoing.
@@ -50,7 +50,7 @@ void tf_move_cursor(TxtField *tf, const int dir);
 // Resizes and repositions the text field.
 void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsigned newwidth);
 
-// Draws a horizontal line across the screen, separating the message pane from the input 'field'.
+// Draws a horizontal line across the screen above the input field.
 void tf_draw_border(const TxtField *tf);
 
 #endif

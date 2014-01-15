@@ -6,8 +6,8 @@
 #include "scrollpane.h"
 #include "network.h"
 #include "message.h"
+#include "linkedlist.h"
 #include "helper.h"
-
 
 // Show usage banner
 void show_banner(void)
@@ -15,20 +15,15 @@ void show_banner(void)
     printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    // SUPRRESSES GCC UNUSED VARIABLE WARNING!
-    // THIS IS ONLY TEMPORARY!
-    (void)argc;
-    (void)argv;
- 
     init_curses();
 
     unsigned prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
 
-    // Initialize the message history 'queue'.
-    MessageHistory messages;
-    hist_init(&messages, 250);  // Sets max history to 250 for now.
+    // Initialize the message history list.
+    LinkedList messages;
+    list_init(&messages, 250);  // Sets max history to 250 for now.
 
     // Initializes the window where all chat messages will appear.
     ScrollPane chatpane;

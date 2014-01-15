@@ -1,7 +1,7 @@
 #ifndef SCROLLPANE_H
 #define SCROLLPANE_H
 
-#include <string.h>
+#include <stdlib.h>
 #include "xcurses.h"
 
 typedef struct
@@ -11,9 +11,9 @@ typedef struct
     size_t WIDTH;
     size_t HEIGHT;
 
-    unsigned scroll_offset;
+    unsigned scroll_offset;  // Keeps track as the user scrolls the window.
 
-    WINDOW *win;
+    WINDOW *win;  // An ncurses window.
 } ScrollPane;
 
 // Creates a new window and sets defaults.

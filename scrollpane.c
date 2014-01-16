@@ -84,7 +84,7 @@ int sp_print(ScrollPane *sp, const char *txt)
     const unsigned linec = (strlen(txt) / sp->width) + 1;
     for (unsigned i = 0; i < linec; ++i) {
         char *line = sp_new_line(sp, txt, i);
-        if(line == NULL)
+        if (line == NULL)
             return 0;
 
         wprintw(sp->win, "%s", line);

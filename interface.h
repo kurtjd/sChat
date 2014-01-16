@@ -8,8 +8,8 @@
 // Sets up the curses environment with preferred settings.
 void init_curses(void);
 
-// Handles all user input.
-void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on);
+// Handles all user input. Returns 0 on memory allocation failure, and -1 on no key pressed.
+int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on);
 
 // Reinitializes ncurses to work with the resized window.
 void window_resize(void);

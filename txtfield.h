@@ -5,23 +5,23 @@
 
 typedef struct
 {
-    unsigned XPOS;
-    unsigned YPOS;
-    size_t WIDTH;
-    size_t HEIGHT;
+    unsigned x;
+    unsigned y;
+    size_t width;
+    size_t height;
 
-    size_t MAXLEN;
-    size_t SCROLL_GAP;  // How much space the textfield should scroll by when input reaches width.
+    size_t maxlen;
+    size_t length;
+    size_t scroll_gap;  // How much space the textfield should scroll by when input reaches width.
 
     char *value;
-    size_t length;
 
     unsigned echo_start;  // The position in the input to begin echoing.
     int cursor_offset;  // Cursor position relative to end of input.
 } TxtField;
 
-// Initializes a new text field.
-void tf_init(TxtField *tf, const unsigned xpos, const unsigned ypos, const size_t width, const size_t maxlen);
+// Initializes a new text field. Returns 0 if memory could not be allocated.
+int tf_init(TxtField *tf, const unsigned x, const unsigned y, const size_t width, const size_t maxlen);
 
 // Performs cleanup.
 void tf_destroy(TxtField *tf);
@@ -30,7 +30,7 @@ void tf_destroy(TxtField *tf);
 void tf_insert(TxtField *tf, const char c);
 
 // Sets the contents of the textfield to a specified string.
-void tf_set(TxtField *tf, const char *str);
+void tf_set(TxtField *tf, const char *value);
 
 // Deletes the char before the cursor from textfield and from the screen.
 void tf_backspace(TxtField *tf);

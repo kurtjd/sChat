@@ -18,16 +18,16 @@ typedef struct
     char txt[MAX_MSG_LEN];  // This will probably be dynamically allocated in the future.
 } Message;
 
-// Creates a new instance of the Message struct on the heap, then adds it to the message list.
+// Creates a new instance of the Message struct on the heap, then adds it to the message list. Returns NULL on failure.
 Message* msg_new(LinkedList *messages, const unsigned sender, const time_t timestamp, const char *msg);
 
-// Prints a single message to the chatpane.
-void msg_print(const Message *message, ScrollPane *sp);
+// Prints a single message to the chatpane. Returns 0 on failure to allocate memory.
+int msg_print(const Message *message, ScrollPane *sp);
 
-// Prints all messages to the chatpane.
-void msg_print_all(const LinkedList *messages, ScrollPane *sp);
+// Prints all messages to the chatpane. Returns 0 on failure.
+int msg_print_all(const LinkedList *messages, ScrollPane *sp);
 
-// Returns the total number of lines of all messages in the history.
+// Returns the total number of lines of all messages in the history. Returns 0 on failure.
 int msg_all_linec(const LinkedList *messages, const size_t screenw);
 
 #endif

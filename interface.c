@@ -15,20 +15,20 @@ void init_curses(void)
     initscr();
     cbreak();
     noecho();  // Gotta turn @echo off!
-    keypad(stdscr, 1);
-    nodelay(stdscr, 1);  // Makes getch() non-blocking.
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);  // Makes getch() non-blocking.
 }
 
-void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on)
+int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on)
 {
-    if (messages == NULL)
-        return;
+    if (messages == NULL || sp == NULL || tf == NULL)
+        return 0;
 
     int keyp = getch();
 
     switch (keyp) {
     case ERR:  // No key pressed.
-        return;
+        return -1;
 
     case '\n':  // This means the enter key was pressed.
         // Don't send blank messages.
@@ -41,7 +41,8 @@ void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *
 
         // Add the message to history then print it.
         Message *msg = msg_new(messages, FROM_SELF, time(0), tf->value);
-        msg_print(msg, sp);
+        if(msg == NULL || !msg_print(msg, sp))
+            return 0;
 
         *prev_msg_on = 0;
         tf_clear(tf);
@@ -56,12 +57,14 @@ void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *
 
     case KEY_C_UP:
         sp_scroll(sp, 1);
-        msg_print_all(messages, sp);
+        if(!msg_print_all(messages, sp))
+            return 0;
         break;
 
     case KEY_C_DOWN:
         sp_scroll(sp, -1);
-        msg_print_all(messages, sp);
+        if(!msg_print_all(messages, sp))
+            return 0;
         break;
 
     case KEY_LEFT:
@@ -92,6 +95,8 @@ void handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *
             tf_insert(tf, keyp);
         break;
     }
+
+    return 1;
 }
 
 void window_resize(void)
@@ -104,6 +109,9 @@ void window_resize(void)
 // This needs to go somewhere else. It is only temporary.
 void cycle_sent_msg(const int dir, const LinkedList *messages, TxtField *tf, unsigned *prev_msg_on)
 {
+    if(messages == NULL || tf == NULL)
+        return;
+
     // Cycle between previously sent messages.
     if (dir < 0) {
         if (*prev_msg_on >= 1)

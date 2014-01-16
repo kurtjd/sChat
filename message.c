@@ -17,7 +17,11 @@ static char* msg_format(const unsigned sender, const time_t timestamp, const cha
 
     /* Allocate enough space to hold the name along with the message.
     * +1 to account for null character. */
-    char *message = calloc(strlen(msg_sender) + strlen(msg) + 1, sizeof(char));
+    char *message = malloc(strlen(msg_sender) + strlen(msg) + 1);
+    if(message == NULL)
+        return NULL;
+
+    message[0] = '\0';
 
     // Then copy individual strings into message.
     strncpy(message, msg_sender, sizeof msg_sender);
@@ -28,7 +32,12 @@ static char* msg_format(const unsigned sender, const time_t timestamp, const cha
 
 Message* msg_new(LinkedList *messages, const unsigned sender, const time_t timestamp, const char *msg)
 {
+    if(messages == NULL)
+        return NULL;
+
     Message *new_msg = malloc(sizeof *new_msg);
+    if(new_msg == NULL)
+        return NULL;
 
     new_msg->sender = sender;
     new_msg->timestamp = timestamp;
@@ -36,41 +45,56 @@ Message* msg_new(LinkedList *messages, const unsigned sender, const time_t times
     // Can't use sizeof on an array passed into a function, so add 1 to account for null char.
     strncpy(new_msg->txt, msg, strlen(msg) + 1);
 
-    list_append(messages, new_msg);
+    if(list_append(messages, new_msg) == NULL)
+        return NULL;
 
     return new_msg;
 }
 
-void msg_print(const Message *message, ScrollPane *sp)
+int msg_print(const Message *message, ScrollPane *sp)
 {
+    if(message == NULL || sp == NULL)
+        return 0;
+
     char *msg = msg_format(message->sender, message->timestamp, message->txt);
+    if(msg == NULL)
+        return 0;
+
     sp_print(sp, msg);
     free(msg);
     msg = NULL;
+
+    return 1;
 }
 
 // The below two functions will be going away once ScrollPane is complete.
-void msg_print_all(const LinkedList *messages, ScrollPane *sp)
+int msg_print_all(const LinkedList *messages, ScrollPane *sp)
 {
-    if (messages == NULL)
-        return;
+    if (messages == NULL || sp == NULL)
+        return 0;
 
     sp_reset(sp);
     
-    for (Node *node = messages->first; node != NULL; node = node->next)
-        msg_print(node->value, sp);
+    for (Node *node = messages->first; node != NULL; node = node->next) {
+        if(!msg_print(node->value, sp))
+            return 0;
+    }
+
+    return 1;
 }
 
 int msg_all_linec(const LinkedList *messages, const size_t screenw)
 {
     if (messages == NULL)
-        return -1;
+        return 0;
 
-    int total_lines = 0;
+    unsigned total_lines = 0;
 
     for (Node *node = messages->first; node != NULL; node = node->next) {
         const Message *msg = node->value;
         char *final_msg = msg_format(msg->sender, msg->timestamp, msg->txt);
+        if(final_msg == NULL)
+            return 0;
 
         total_lines += ((strlen(final_msg) / screenw) + 1);
         free(final_msg);

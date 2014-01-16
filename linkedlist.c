@@ -4,6 +4,9 @@
 // Creates a new node.
 static Node* list_new_node(LinkedList *list, void *value)
 {
+    if(list == NULL)
+        return NULL;
+
     Node *node = malloc(sizeof *node);
     if(node == NULL)
         return NULL;
@@ -23,7 +26,7 @@ void list_init(LinkedList *list, const size_t maxsize)
     if (list == NULL)
         return;
 
-    list->maxsize = maxsize;
+    list->maxsize = maxsize;  // Hmmm what would a maxsize of 1 do?
     list->size = 0;
 
     // Set these pointers to NULL so any attempt to dereference prematurely will crash.
@@ -37,11 +40,13 @@ Node* list_append(LinkedList *list, void *value)
         return NULL;
 
     Node *node = list_new_node(list, value);
+    if(node == NULL)
+        return NULL;
 
     if (list->first == NULL)
         list->first = node;
-    else if (list->size >= list->maxsize)  // If at max size, make room for new node.
-        list_pop_front(list);
+    else if (list->maxsize && list->size >= list->maxsize)  // If at max size, make room for new node.
+        list_prepop(list);
 
     // If this is the first node, we want next to remain NULL.
     if (list->size > 0)
@@ -53,7 +58,7 @@ Node* list_append(LinkedList *list, void *value)
     return node;
 }
 
-Node* list_pop_front(LinkedList *list)
+Node* list_prepop(LinkedList *list)
 {
     if (list == NULL)
         return NULL;

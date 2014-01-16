@@ -6,18 +6,18 @@
 
 typedef struct
 {
-    unsigned XPOS;
-    unsigned YPOS;
-    size_t WIDTH;
-    size_t HEIGHT;
+    unsigned x;
+    unsigned y;
+    size_t width;
+    size_t height;
 
     unsigned scroll_offset;  // Keeps track as the user scrolls the window.
 
     WINDOW *win;  // An ncurses window.
 } ScrollPane;
 
-// Creates a new window and sets defaults.
-void sp_init(ScrollPane *sp, const unsigned xpos, const unsigned ypos, const unsigned width, const unsigned height);
+// Creates a new window and sets defaults. Returns 0 on failure.
+int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t width, const size_t height);
 
 // Deallocates the window memory.
 void sp_destroy(ScrollPane *sp);

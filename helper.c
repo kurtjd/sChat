@@ -14,15 +14,6 @@ void moveby(const int yinc, const int xinc)
     move(cury + yinc, curx + xinc);
 }
 
-void* safe_malloc(const size_t size)
-{
-    void *newmem = malloc(size);
-    if (!newmem)
-        return NULL;
-
-    return newmem;
-}
-
 void clean_exit(const int status, LinkedList *messages, ScrollPane *sp, TxtField *tf)
 {
     if (messages)

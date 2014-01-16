@@ -12,9 +12,6 @@
 // Moves the cursor by specified amount.
 void moveby(const int yinc, const int xinc);
 
-// Checks if malloc was successful and peforms cleanup if not.
-void* safe_malloc(const size_t size);
-
 // Performs cleanup then exits program.
 void clean_exit(const int status, LinkedList *messages, ScrollPane *sp, TxtField *tf);
 

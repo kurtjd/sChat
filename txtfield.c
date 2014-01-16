@@ -10,7 +10,7 @@
 
 int tf_init(TxtField *tf, const unsigned x, const unsigned y, const size_t width, const size_t maxlen)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return 0;
 
     tf->height = 1;
@@ -19,7 +19,7 @@ int tf_init(TxtField *tf, const unsigned x, const unsigned y, const size_t width
     tf->scroll_gap = 20;  // May make this dynamic in the future!
 
     tf->value = malloc(maxlen + 1);
-    if(tf->value == NULL)
+    if (tf->value == NULL)
         return 0;
 
     tf->value[0] = '\0';
@@ -34,7 +34,7 @@ int tf_init(TxtField *tf, const unsigned x, const unsigned y, const size_t width
 
 void tf_destroy(TxtField *tf)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     free(tf->value);
@@ -63,7 +63,7 @@ void tf_insert(TxtField *tf, const char c)
 
 void tf_set(TxtField *tf, const char *value)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     tf->length = strlen(value);
@@ -94,7 +94,7 @@ void tf_backspace(TxtField *tf)
 
 void tf_clear(TxtField *tf)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     move(tf->y, tf->x);
@@ -110,7 +110,7 @@ void tf_clear(TxtField *tf)
 
 void tf_draw(TxtField *tf)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     tf_draw_border(tf);
@@ -124,7 +124,7 @@ void tf_draw(TxtField *tf)
 
 void tf_reset_echo(TxtField *tf)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     move(tf->y, tf->x);
@@ -139,7 +139,7 @@ void tf_reset_echo(TxtField *tf)
 
 void tf_move_cursor(TxtField *tf, const int dir)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     if (dir < 0 && get_cursor(X) > tf->x)
@@ -152,7 +152,7 @@ void tf_move_cursor(TxtField *tf, const int dir)
 
 void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsigned newwidth)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     tf->x = newx;
@@ -165,7 +165,7 @@ void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsi
 // Will probably get rid of this in the future.
 void tf_draw_border(const TxtField *tf)
 {
-    if(tf == NULL)
+    if (tf == NULL)
         return;
 
     move(tf->y - 1, tf->x);

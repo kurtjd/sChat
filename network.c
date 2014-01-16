@@ -17,12 +17,12 @@
 int peer_start(int sockfd, const char *host, const char *port)
 {
 	// Try to connect to the host provided 
-	if( (peer_connect(sockfd, host, port)) == 1){
+	if ( (peer_connect(sockfd, host, port)) == 1){
 		return 1;
 	}
 
 	// If we can't connect, act as the server
-	if( (peer_listen(sockfd, port)) == 1){
+	if ( (peer_listen(sockfd, port)) == 1){
 		return 1;
 	}
 
@@ -47,7 +47,7 @@ int peer_listen(int sockfd, const char *port)
 	server.ai_socktype = SOCK_STREAM;
 	server.ai_flags = AI_PASSIVE;
 
-	if((getaddrinfo(NULL, port, &server, &servinfo)) != 0){
+	if ((getaddrinfo(NULL, port, &server, &servinfo)) != 0){
 		fprintf(stderr, "Error: Unable to prepare addrinfo\n");
 		return 0;
 	}
@@ -56,12 +56,12 @@ int peer_listen(int sockfd, const char *port)
 
 	for(p = servinfo; p != NULL; p = p->ai_next){
 
-		if((lsockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
+		if ((lsockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
 			fprintf(stderr, "Error: Unable to create socket\n");
 			return 0;
 		}
 
-		if(bind(lsockfd, p->ai_addr, p->ai_addrlen) < 0){
+		if (bind(lsockfd, p->ai_addr, p->ai_addrlen) < 0){
 			fprintf(stderr, "Error: Bind\n");
 			close(sockfd);
 			continue;
@@ -70,13 +70,13 @@ int peer_listen(int sockfd, const char *port)
 		break;
 	}
 
-	if(p == NULL){
+	if (p == NULL){
 		fprintf(stderr, "Error: Failed to bind to port %s\n", port);
 	}
 
 	freeaddrinfo(servinfo);
 
-	if(listen(sockfd, MAX_CONNECTIONS) < 0){
+	if (listen(sockfd, MAX_CONNECTIONS) < 0){
 		fprintf(stderr, "Error: Unable to listen on port %s\n", port);
 		return 0;
 	}
@@ -84,7 +84,7 @@ int peer_listen(int sockfd, const char *port)
 	// Wait for a peer to connect to us.
 
 	while(1){
-		if( (sockfd = accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
+		if ( (sockfd = accept(sockfd, (struct sockaddr *)&peer, &sockaddr_size)) < 0){
 			fprintf(stderr, "Error: could not accept connection from peer\n");
 			return 0;
 		}
@@ -111,7 +111,7 @@ int peer_connect(int sockfd, const char *host, const char *port)
 	client.ai_family = AF_UNSPEC;
 	client.ai_socktype = SOCK_STREAM;
 
-	if((getaddrinfo(host, port, &client, &servinfo)) != 0){
+	if ((getaddrinfo(host, port, &client, &servinfo)) != 0){
 		fprintf(stderr, "Unable to assemble address info\n");
 		return 0;
 	}
@@ -122,14 +122,14 @@ int peer_connect(int sockfd, const char *host, const char *port)
 
 		for(p = servinfo; p != NULL; p = p->ai_next) {
 
-			if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
+			if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))  < 0 ){
 				fprintf(stderr, "Error unable to create socket\n");
 				continue;
 			}
 
 			printf("Connecting to peer %s:%s\n",host,port);
 
-			if(connect(sockfd, p->ai_addr, p->ai_addrlen) < 0){
+			if (connect(sockfd, p->ai_addr, p->ai_addrlen) < 0){
 				fprintf(stderr, "Error: Connect\n");
 				close(sockfd);
 				continue;
@@ -138,7 +138,7 @@ int peer_connect(int sockfd, const char *host, const char *port)
 			break;
 		}
 
-		if(p) break;
+		if (p) break;
 	}
 
 	printf("Connected to peer %s:%s\n",host,port);
@@ -149,7 +149,7 @@ int peer_connect(int sockfd, const char *host, const char *port)
 
 int peer_send(int sockfd, const char *message)
 {
-	if((send(sockfd, message, strlen(message), 0)) < 0){
+	if ((send(sockfd, message, strlen(message), 0)) < 0){
 		fprintf(stderr, "Error: Unable to send message: %s",message);	
 		return 0;
 	}
@@ -161,7 +161,7 @@ int peer_recv(int sockfd)
 {
 	int r;
 	char buf[MAX_MSG_LEN];
-	if((r = recv(sockfd, buf, MAX_MSG_LEN, 0)) < 0){
+	if ((r = recv(sockfd, buf, MAX_MSG_LEN, 0)) < 0){
 		fprintf(stderr, "Error: Unable to receive message\n");
 		return 0;
 	}

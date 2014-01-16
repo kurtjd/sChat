@@ -6,7 +6,7 @@
 
 int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t width, const size_t height)
 {
-    if(sp == NULL)
+    if (sp == NULL)
         return 0;
 
     sp->x = x;
@@ -17,7 +17,7 @@ int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t wid
     sp->scroll_offset = 0;
 
     sp->win = newwin(height, width, y, x);
-    if(sp->win == NULL)
+    if (sp->win == NULL)
         return 0;
 
     scrollok(sp->win, TRUE);  // Allows text to scroll in the window when hitting the bottom.
@@ -27,7 +27,7 @@ int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t wid
 
 void sp_destroy(ScrollPane *sp)
 {
-    if(sp == NULL)
+    if (sp == NULL)
         return;
 
     delwin(sp->win);
@@ -36,7 +36,7 @@ void sp_destroy(ScrollPane *sp)
 
 void sp_print(ScrollPane *sp, const char *txt)
 {
-    if(sp == NULL)
+    if (sp == NULL)
         return;
 
     sp_print_lines(sp, txt);
@@ -45,7 +45,7 @@ void sp_print(ScrollPane *sp, const char *txt)
 
 void sp_print_lines(ScrollPane *sp, const char *txt)
 {
-    if(sp == NULL)
+    if (sp == NULL)
         return;
 
     /* Display at most sp->width - 1 characters of the line, and determine
@@ -58,7 +58,7 @@ void sp_print_lines(ScrollPane *sp, const char *txt)
 
 void sp_scroll(ScrollPane *sp, const int dir)
 {
-    if(sp == NULL)
+    if (sp == NULL)
         return;
 
     if (dir < 0 && sp->scroll_offset > 0)
@@ -69,7 +69,7 @@ void sp_scroll(ScrollPane *sp, const int dir)
 
 void sp_reset(ScrollPane *sp)
 {
-    if(sp == NULL)
+    if (sp == NULL)
         return;
 
     wclear(sp->win);

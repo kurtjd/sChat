@@ -4,11 +4,11 @@
 // Creates a new node.
 static Node* list_new_node(LinkedList *list, void *value)
 {
-    if(list == NULL)
+    if (list == NULL)
         return NULL;
 
     Node *node = malloc(sizeof *node);
-    if(node == NULL)
+    if (node == NULL)
         return NULL;
 
     node->next = NULL;
@@ -40,7 +40,7 @@ Node* list_append(LinkedList *list, void *value)
         return NULL;
 
     Node *node = list_new_node(list, value);
-    if(node == NULL)
+    if (node == NULL)
         return NULL;
 
     if (list->first == NULL)

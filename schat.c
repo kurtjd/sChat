@@ -21,28 +21,26 @@ int main()
 
     unsigned prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
 
-    // Initialize the message history list.
     LinkedList messages;
     list_init(&messages, 250);  // Sets max history to 250 for now.
 
-    // Initializes the window where all chat messages will appear.
     ScrollPane chatpane;
-    
-    // Initialize the sole text field to be used for input.
-    TxtField input_field;
+    TxtField input;
 
     // Initialize the chatpane and input field, while checking for errors.
-    if (!sp_init(&chatpane, 0, 0, COLS, LINES - 1) || !tf_init(&input_field, 0, LINES - 1, COLS, MAX_MSG_LEN))
+    if (!sp_init(&chatpane, 0, 0, COLS, LINES - 1) || !tf_init(&input, 0, LINES - 1, COLS, MAX_MSG_LEN))
         clean_exit(EXIT_FAILURE, NULL, NULL, NULL);
     
+    // This is where the magic happens.
     while (1) {
-        tf_draw(&input_field);
+        tf_draw(&input);
 
-        if (!handle_input(&messages, &chatpane, &input_field, &prev_msg_on))
-            clean_exit(EXIT_FAILURE, &messages, &chatpane, &input_field);
+        // If anything throws an error, exit gracefully.
+        if (!handle_input(&messages, &chatpane, &input, &prev_msg_on))
+            clean_exit(EXIT_FAILURE, &messages, &chatpane, &input);
 
         doupdate();  // Update all windows at once rather than individually.
     }
 
-    clean_exit(EXIT_SUCCESS, &messages, &chatpane, &input_field);  // Should never get to here...
+    clean_exit(EXIT_SUCCESS, &messages, &chatpane, &input);  // Should never get to here...
 }

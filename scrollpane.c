@@ -2,7 +2,27 @@
 #include "xcurses.h"
 #include "txtfield.h"
 #include "scrollpane.h"
-#include "helper.h"
+#include "linkedlist.h"
+
+// Given a position in a string, creates a new string that would fit on one line.
+static char* sp_new_line(ScrollPane *sp, const char *txt, const size_t lstart)
+{
+    // Determines where in the string a new line would start, and now long this line should be.
+    const char *line_start = txt + (lstart * sp->width);
+    const size_t linelen = strlen(line_start) >= sp->width ? sp->width : strlen(line_start);
+
+    char *line = malloc(linelen + 1);
+    if (line == NULL)
+        return NULL;
+
+    strncpy(line, line_start, linelen);
+    line[linelen] = '\0';
+
+    if (list_append(&sp->lines, line) == NULL)
+        return NULL;
+
+    return line;
+}
 
 int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t width, const size_t height)
 {
@@ -14,6 +34,7 @@ int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t wid
     sp->width = width;
     sp->height = height;
 
+    list_init(&sp->lines, 0);
     sp->scroll_offset = 0;
 
     sp->win = newwin(height, width, y, x);
@@ -32,28 +53,28 @@ void sp_destroy(ScrollPane *sp)
 
     delwin(sp->win);
     sp->win = NULL;
+    list_clear(&sp->lines);
 }
 
-void sp_print(ScrollPane *sp, const char *txt)
+int sp_print(ScrollPane *sp, const char *txt)
 {
     if (sp == NULL)
-        return;
-
-    sp_print_lines(sp, txt);
-    wnoutrefresh(sp->win);  // Updates virtual screen but not physical screen.
-}
-
-void sp_print_lines(ScrollPane *sp, const char *txt)
-{
-    if (sp == NULL)
-        return;
-
-    /* Display at most sp->width - 1 characters of the line, and determine
-     * which character in the line starts a newline. */
+        return 0;
+    
+    // Breaks the string into lines and appends each line to the linked-list, then prints it.
     const unsigned linec = (strlen(txt) / sp->width) + 1;
-    for (unsigned line = 1; line <= linec; ++line)
-        wprintw(sp->win, "%.*s", sp->width, txt + ((line - 1) * sp->width));
+    for (unsigned i = 0; i < linec; ++i) {
+        char *line = sp_new_line(sp, txt, i);
+        if(line == NULL)
+            return 0;
+
+        wprintw(sp->win, "%s", line);
+    }
+
     waddch(sp->win, '\n');
+    wnoutrefresh(sp->win);  // Updates virtual screen but not physical screen.
+
+    return 1;
 }
 
 void sp_scroll(ScrollPane *sp, const int dir)

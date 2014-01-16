@@ -57,10 +57,10 @@ int msg_print(const Message *message, ScrollPane *sp)
         return 0;
 
     char *msg = msg_format(message->sender, message->timestamp, message->txt);
-    if (msg == NULL)
+
+    if (msg == NULL || !sp_print(sp, msg))
         return 0;
 
-    sp_print(sp, msg);
     free(msg);
     msg = NULL;
 

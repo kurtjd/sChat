@@ -27,12 +27,12 @@ int main()
 
     // Initializes the window where all chat messages will appear.
     ScrollPane chatpane;
-    if (!sp_init(&chatpane, 0, 0, COLS, LINES - 1))
-        clean_exit(EXIT_FAILURE, NULL, NULL, NULL);
-
+    
     // Initialize the sole text field to be used for input.
     TxtField input_field;
-    if (!tf_init(&input_field, 0, LINES - 1, COLS, MAX_MSG_LEN))
+
+    // Initialize the chatpane and input field, while checking for errors.
+    if (!sp_init(&chatpane, 0, 0, COLS, LINES - 1) || !tf_init(&input_field, 0, LINES - 1, COLS, MAX_MSG_LEN))
         clean_exit(EXIT_FAILURE, NULL, NULL, NULL);
     
     while (1) {

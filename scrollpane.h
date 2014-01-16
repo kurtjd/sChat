@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include "xcurses.h"
+#include "linkedlist.h"
 
 typedef struct
 {
@@ -11,6 +12,7 @@ typedef struct
     size_t width;
     size_t height;
 
+    LinkedList lines;  // A linked list where each individual line is a node.
     unsigned scroll_offset;  // Keeps track as the user scrolls the window.
 
     WINDOW *win;  // An ncurses window.
@@ -22,11 +24,8 @@ int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t wid
 // Deallocates the window memory.
 void sp_destroy(ScrollPane *sp);
 
-// Prints some text to the window and refeshes.
-void sp_print(ScrollPane *sp, const char *txt);
-
-// Prints each line of a body of text sequentially.
-void sp_print_lines(ScrollPane *sp, const char *txt);
+// Adds each line of the given string to the linked-list. Returns 0 if a line could not be appended.
+int sp_print(ScrollPane *sp, const char *txt);
 
 // Scrolls the window.
 void sp_scroll(ScrollPane *sp, const int dir);

@@ -22,6 +22,7 @@
 #include "txtfield.h"
 #include "scrollpane.h"
 #include "linkedlist.h"
+#include "helper.h"
 
 // Given a position in a string, creates a new string that would fit on one line.
 static char* sp_new_line(ScrollPane *sp, const char *txt, const size_t lstart)
@@ -88,23 +89,35 @@ int sp_print(ScrollPane *sp, const char *txt)
             return 0;
 
         wprintw(sp->win, "%s", line);
+
+        /* If the ncurses cursor gets to the end of the screen, it automatically goes to the next line.
+         * If the line isn't as long as the screen, manually print newline. */
+        if(strlen(line) < sp->width)
+            waddch(sp->win, '\n');
     }
 
-    waddch(sp->win, '\n');
-    wnoutrefresh(sp->win);  // Updates virtual screen but not physical screen.
+    wnoutrefresh(sp->win);
 
     return 1;
 }
 
 void sp_scroll(ScrollPane *sp, const int dir)
 {
-    if (sp == NULL)
+    if (sp == NULL || sp->lines.size < sp->height)
         return;
 
-    if (dir < 0 && sp->scroll_offset > 0)
+    // NONE OF THIS WORKS YET!
+    if (dir < 0 && sp->scroll_offset > 0) {
         --sp->scroll_offset;
-    else if (dir > 0)
+        wscrl(sp->win, 1);
+        mvwprintw(sp->win, sp->y + sp->height - 1, sp->x, "%s", list_get(&sp->lines, (sp->lines.size - sp->scroll_offset)));
+    } else if (dir > 0) {
         ++sp->scroll_offset;
+        wscrl(sp->win, -1);
+        mvwprintw(sp->win, sp->y, sp->x, "%s", list_get(&sp->lines, (sp->lines.size - sp->height - sp->scroll_offset) + 1));
+    }
+
+    wnoutrefresh(sp->win);
 }
 
 void sp_reset(ScrollPane *sp)

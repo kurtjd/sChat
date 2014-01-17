@@ -76,14 +76,10 @@ int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *p
 
     case KEY_C_UP:
         sp_scroll(sp, 1);
-        if (!msg_print_all(messages, sp))
-            return 0;
         break;
 
     case KEY_C_DOWN:
         sp_scroll(sp, -1);
-        if (!msg_print_all(messages, sp))
-            return 0;
         break;
 
     case KEY_LEFT:

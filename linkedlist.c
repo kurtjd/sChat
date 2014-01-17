@@ -53,6 +53,17 @@ void list_init(LinkedList *list, const size_t maxsize)
     list->last = NULL;
 }
 
+void* list_get(LinkedList *list, const size_t index)
+{
+    Node *node = list->first;
+    for (size_t i = 0; node != NULL; node = node->next, ++i) {
+        if (i == index)
+            return node->value;
+    }
+
+    return NULL;
+}
+
 Node* list_append(LinkedList *list, void *value)
 {
     if (list == NULL)

@@ -42,6 +42,11 @@ typedef struct
 // Initialize linked list. A maxsize of 0 means unlimited size.
 void list_init(LinkedList *list, const size_t maxsize);
 
+/* Returns a pointer to the value at the specified index in the list.
+ * Do not use to traverse a list, such as in a for loop!
+ * Use list_iter() instead. */
+void* list_get(LinkedList *list, const size_t index);
+
 // Adds a node to the linked list, then returns a pointer to it.
 Node* list_append(LinkedList *list, void *value);
 

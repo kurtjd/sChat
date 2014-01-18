@@ -117,5 +117,7 @@ void list_clear(LinkedList *list)
         node = tmp;
     }
 
+    list->first = NULL;
+    list->last = NULL;
     list->size = 0;
 }

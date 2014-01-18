@@ -17,6 +17,7 @@
  ******************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
+#include <locale.h>
 #include "xcurses.h"
 #include "interface.h"
 #include "txtfield.h"
@@ -32,14 +33,18 @@ void show_banner(void)
     printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
 }
 
+// Performs cleanup then exits program.
+
+
 int main()
 {
+    setlocale(LC_ALL, "");  // Once I get Unicode figured out...
     init_curses();
 
     unsigned prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
 
     LinkedList messages;
-    list_init(&messages, 250);  // Sets max history to 250 for now.
+    list_init(&messages, 0);
 
     ScrollPane chatpane;
     TxtField input;

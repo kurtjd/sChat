@@ -51,7 +51,9 @@ int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t wid
 
     sp->x = x;
     sp->y = y;
-    sp->width = width;
+
+    // Because ncurses pushes cursor to next line if a line is equal to the window width.
+    sp->width = width - 1;
     sp->height = height;
 
     list_init(&sp->lines, 0);
@@ -88,12 +90,13 @@ int sp_print(ScrollPane *sp, const char *txt)
         if (line == NULL)
             return 0;
 
-        wprintw(sp->win, "%s", line);
-
-        /* If the ncurses cursor gets to the end of the screen, it automatically goes to the next line.
-         * If the line isn't as long as the screen, manually print newline. */
-        if(strlen(line) < sp->width)
-            waddch(sp->win, '\n');
+        /* If the user is scrolling upwards, don't attempt to print text.
+         * Instead, just increase the scroll offset to account for
+         * the newly added line. */
+        if (!sp->scroll_offset)
+            wprintw(sp->win, "%s\n", line);
+        else
+            ++sp->scroll_offset;
     }
 
     wnoutrefresh(sp->win);
@@ -103,19 +106,37 @@ int sp_print(ScrollPane *sp, const char *txt)
 
 void sp_scroll(ScrollPane *sp, const int dir)
 {
-    if (sp == NULL || sp->lines.size < sp->height)
+    // Function shouldn't run if the screen isn't full or the user tries to scroll down past the last line.
+    if (sp == NULL || !dir || sp->lines.size < sp->height || (dir < 0 && !sp->scroll_offset))
         return;
 
-    // NONE OF THIS WORKS YET!
-    if (dir < 0 && sp->scroll_offset > 0) {
-        --sp->scroll_offset;
-        wscrl(sp->win, 1);
-        mvwprintw(sp->win, sp->y + sp->height - 1, sp->x, "%s", list_get(&sp->lines, (sp->lines.size - sp->scroll_offset)));
-    } else if (dir > 0) {
-        ++sp->scroll_offset;
-        wscrl(sp->win, -1);
-        mvwprintw(sp->win, sp->y, sp->x, "%s", list_get(&sp->lines, (sp->lines.size - sp->height - sp->scroll_offset) + 1));
+    sp->scroll_offset += dir;
+
+    unsigned starty = sp->y;
+    int line_index;
+
+    if (dir > 0) {
+        line_index = (sp->lines.size - sp->height - sp->scroll_offset) + 1;
+
+        // Prevents user from scrolling up past the first line.
+        if (line_index < 0) {
+            sp->scroll_offset -= dir;  // Undo the change to scroll_offset.
+            return;
+        }
+
+        wscrl(sp->win, -dir);
+    } else {
+        starty += (sp->height - 1);
+        line_index = sp->lines.size - sp->scroll_offset - 1;
     }
+
+    /* Either prints a line at the top or bottom of window, depending on which way
+     * the user scrolled. If the user scrolled down, the line is placed in the blank
+     * area at the bottom of the window, and a newline is printed to actually
+     * cause the window to scroll. */
+    mvwprintw(sp->win, starty, sp->x, "%s", list_get(&sp->lines, line_index));
+    if (dir < 0)
+        waddch(sp->win, '\n');
 
     wnoutrefresh(sp->win);
 }
@@ -126,4 +147,5 @@ void sp_reset(ScrollPane *sp)
         return;
 
     wclear(sp->win);
+    list_clear(&sp->lines);
 }

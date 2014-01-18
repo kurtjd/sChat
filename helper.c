@@ -18,6 +18,7 @@
  * along with sChat.  If not, see [http://www.gnu.org/licenses/].             *
  ******************************************************************************/
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "xcurses.h"
 #include "interface.h"
@@ -25,13 +26,6 @@
 #include "scrollpane.h"
 #include "linkedlist.h"
 #include "helper.h"
-
-void moveby(const int yinc, const int xinc)
-{
-    unsigned cury, curx;
-    getyx(stdscr, cury, curx);  // Gets current cursor position.
-    move(cury + yinc, curx + xinc);
-}
 
 void clean_exit(const int status, LinkedList *messages, ScrollPane *sp, TxtField *tf)
 {
@@ -43,7 +37,18 @@ void clean_exit(const int status, LinkedList *messages, ScrollPane *sp, TxtField
         tf_destroy(tf);
 
     endwin();
+
+    if (status == EXIT_FAILURE)
+        printf("An error was encountered and the program had to close.\n");
+
     exit(status);
+}
+
+void moveby(const int yinc, const int xinc)
+{
+    unsigned cury, curx;
+    getyx(stdscr, cury, curx);  // Gets current cursor position.
+    move(cury + yinc, curx + xinc);
 }
 
 unsigned get_cursor(const unsigned axis)

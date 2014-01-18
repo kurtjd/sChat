@@ -33,9 +33,6 @@ void show_banner(void)
     printf("sChat v0.1\nUsage: ./schat [-flags] peer\n");
 }
 
-// Performs cleanup then exits program.
-
-
 int main()
 {
     setlocale(LC_ALL, "");  // Once I get Unicode figured out...

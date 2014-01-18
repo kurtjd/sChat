@@ -107,7 +107,7 @@ int sp_print(ScrollPane *sp, const char *txt)
 void sp_scroll(ScrollPane *sp, const int dir)
 {
     // Function shouldn't run if the screen isn't full or the user tries to scroll down past the last line.
-    if (sp == NULL || !dir || sp->lines.size < sp->height || (dir < 0 && !sp->scroll_offset))
+    if (sp == NULL || !dir || list_size(&sp->lines) < sp->height || (dir < 0 && !sp->scroll_offset))
         return;
 
     sp->scroll_offset += dir;
@@ -116,7 +116,7 @@ void sp_scroll(ScrollPane *sp, const int dir)
     int line_index;
 
     if (dir > 0) {
-        line_index = (sp->lines.size - sp->height - sp->scroll_offset) + 1;
+        line_index = (list_size(&sp->lines) - sp->height - sp->scroll_offset) + 1;
 
         // Prevents user from scrolling up past the first line.
         if (line_index < 0) {
@@ -127,7 +127,7 @@ void sp_scroll(ScrollPane *sp, const int dir)
         wscrl(sp->win, -dir);
     } else {
         starty += (sp->height - 1);
-        line_index = sp->lines.size - sp->scroll_offset - 1;
+        line_index = list_size(&sp->lines) - sp->scroll_offset - 1;
     }
 
     /* Either prints a line at the top or bottom of window, depending on which way

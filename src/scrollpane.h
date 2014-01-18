@@ -24,8 +24,7 @@
 #include "xcurses.h"
 #include "linkedlist.h"
 
-typedef struct
-{
+typedef struct {
     unsigned x;
     unsigned y;
     size_t width;

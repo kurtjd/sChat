@@ -22,8 +22,7 @@
 
 #include <stdlib.h>
 
-typedef struct
-{
+typedef struct {
     unsigned x;
     unsigned y;
     size_t width;

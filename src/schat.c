@@ -38,8 +38,6 @@ int main()
     setlocale(LC_ALL, "");  // Once I get Unicode figured out...
     init_curses();
 
-    unsigned prev_msg_on = 0;  // Keeps track as the user cycles through sent messages.
-
     LinkedList messages;
     list_init(&messages, 0);
 
@@ -55,7 +53,7 @@ int main()
         tf_draw(&input);
 
         // If anything throws an error, exit gracefully.
-        if (!handle_input(&messages, &chatpane, &input, &prev_msg_on))
+        if (!handle_input(&messages, &chatpane, &input))
             clean_exit(EXIT_FAILURE, &messages, &chatpane, &input);
 
         doupdate();  // Update all windows at once rather than individually.

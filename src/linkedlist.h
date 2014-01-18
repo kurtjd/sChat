@@ -22,37 +22,52 @@
 
 #include <stdlib.h>
 
-struct Node;
 typedef struct Node Node;
-struct Node
-{
-    Node *next;
-    Node *prev;
-    void *value;
-};
-
-typedef struct
-{
+typedef struct {
     size_t maxsize;
     size_t size;
     Node *first;
     Node *last;
+
+    // To keep track if the user wishes to traverse through list.
+    Node *next;
+    Node *prev;
 } LinkedList;
 
 // Initialize linked list. A maxsize of 0 means unlimited size.
 void list_init(LinkedList *list, const size_t maxsize);
 
 /* Returns a pointer to the value at the specified index in the list.
- * Do not use to traverse a list, such as in a for loop!
- * Use list_iter() instead. */
+ * Do NOT use to traverse a list, such as in a for loop!
+ * Use list_next() or list_prev() instead. */
 void* list_get(LinkedList *list, const size_t index);
 
-// Adds a node to the linked list, then returns a pointer to it.
-Node* list_append(LinkedList *list, void *value);
+/* Returns the value of the next node in the list.
+ * If list->next is null, return the first node.
+ * If list->next is the last node, return null.
+ * Note: If used in a loop that may break before reaching end of list,
+ * make sure to call list_iter_reset(). */
+void* list_next(LinkedList *list);
+
+/* Returns the value of the previous node in the list.
+ * If list->prev is null, return the last node.
+ * If list->prev is the first node, return null.
+ * Note: If used in a loop that may break before reaching beginning of list,
+ * make sure to call list_iter_reset(). */
+void* list_prev(LinkedList *list);
+
+// Adds a node to the linked list, then returns a pointer to its value.
+void* list_append(LinkedList *list, void *value);
 
 /* Frees the first node, then sets it to the second node.
- * Returns a pointer to the new beginning of the linked list. */
-Node* list_prepop(LinkedList *list);
+ * Returns a pointer to the value of the new beginning of the linked list. */
+void* list_prepop(LinkedList *list);
+
+// Returns the size of the list.
+size_t list_size(const LinkedList *list);
+
+// Resets list->next and list->prev to NULL.
+void list_iter_reset(LinkedList *list);
 
 // Frees all memory in the linked list.
 void list_clear(LinkedList *list);

@@ -38,7 +38,7 @@ void init_curses(void)
     nodelay(stdscr, TRUE);  // Makes getch() non-blocking.
 }
 
-int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *prev_msg_on)
+int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf)
 {
     if (messages == NULL || sp == NULL || tf == NULL)
         return 0;
@@ -63,7 +63,8 @@ int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *p
         if (msg == NULL || !msg_print(msg, sp))
             return 0;
 
-        *prev_msg_on = 0;
+        msg_cycle_sent(messages, tf, 0);  // Resets message cycle.
+
         tf_clear(tf);
         break;
 
@@ -73,31 +74,24 @@ int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf, unsigned *p
     case 8:
         tf_backspace(tf);
         break;
-
     case KEY_C_UP:
         sp_scroll(sp, 1);
         break;
-
     case KEY_C_DOWN:
         sp_scroll(sp, -1);
         break;
-
     case KEY_LEFT:
         tf_move_cursor(tf, -1);
         break;
-
     case KEY_RIGHT:
         tf_move_cursor(tf, 1);
         break;
-
     case KEY_UP:
-        cycle_sent_msg(1, messages, tf, prev_msg_on);
+        msg_cycle_sent(messages, tf, 1);
         break;
-
     case KEY_DOWN:
-        cycle_sent_msg(-1, messages, tf, prev_msg_on);
+        msg_cycle_sent(messages, tf, -1);
         break;
-
     case KEY_RESIZE:
         window_resize();
         tf_scale(tf, 0, LINES - 1, COLS);
@@ -119,41 +113,4 @@ void window_resize(void)
     endwin();
     refresh();
     clear();
-}
-
-// This needs to go somewhere else. It is only temporary.
-void cycle_sent_msg(const int dir, const LinkedList *messages, TxtField *tf, unsigned *prev_msg_on)
-{
-    if (messages == NULL || tf == NULL)
-        return;
-
-    // Cycle between previously sent messages.
-    if (dir < 0) {
-        if (*prev_msg_on >= 1)
-            --*prev_msg_on;
-        else
-            *prev_msg_on = messages->size;
-    } else if (dir > 0) {
-        if (*prev_msg_on < messages->size)
-            ++*prev_msg_on;
-        else
-            *prev_msg_on = 0;
-    }
-
-    // Clear the message buffer and text in the input field.
-    tf_clear(tf);
-
-    /* Loop through the previous messages until we find the one that matches what the user wants,
-     * and then place it into the message buffer. */
-    Node *node = messages->last;
-    for (unsigned i = 0; i != *prev_msg_on; node = node->prev) {
-        const Message *msg = node->value;
-        if (msg->sender == FROM_SELF)
-            ++i;
-        if (i == *prev_msg_on)
-            tf_set(tf, msg->txt);
-    }
-    
-    // Need to reset echo_start in case the message is longer than the screen.
-    tf_reset_echo(tf);
 }

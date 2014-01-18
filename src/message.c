@@ -21,9 +21,16 @@
 #include <string.h>
 #include <time.h>
 #include "message.h"
-#include "linkedlist.h"
+#include "txtfield.h"
 #include "scrollpane.h"
+#include "linkedlist.h"
 #include "helper.h"
+
+struct Message {
+    unsigned sender;  // Either FROM_SELF or FROM_PEER.
+    time_t timestamp;
+    char txt[MAX_MSG_LEN];  // This will probably be dynamically allocated in the future.
+};
 
 // Combines all the elements of a message into a string. Only used internally hence the static qualifier.
 static char* msg_format(const unsigned sender, const time_t timestamp, const char *msg)
@@ -86,39 +93,43 @@ int msg_print(const Message *message, ScrollPane *sp)
     return 1;
 }
 
-// The below two functions will be going away once ScrollPane is complete.
-int msg_print_all(const LinkedList *messages, ScrollPane *sp)
+void msg_cycle_sent(LinkedList *messages, TxtField *tf, const int dir)
 {
-    if (messages == NULL || sp == NULL)
-        return 0;
+    if (messages == NULL || tf == NULL)
+        return;
 
-    sp_reset(sp);
+    static unsigned prev_msg_on = 0;
+
+    // Cycle between previously sent messages.
+    if (!dir) {
+        prev_msg_on = 0;  // Reset message cycle.
+        return;
+    } else if (dir > 0) {
+        if (prev_msg_on < messages->size)
+            ++prev_msg_on;
+        else
+            prev_msg_on = 0;
+    } else {
+        if (prev_msg_on >= 1)
+            --prev_msg_on;
+        else
+            prev_msg_on = messages->size;
+    }
+
+    // Clear the message buffer and text in the input field.
+    tf_clear(tf);
+
+    /* Loop through the previous messages until we find the one that matches what the user wants,
+     * and then place it into the message buffer. */
+    Message *msg = list_prev(messages);
+    for (unsigned i = 0; i != prev_msg_on; msg = list_prev(messages)) {
+        if (msg->sender == FROM_SELF)
+            ++i;
+        if (i == prev_msg_on)
+            tf_set(tf, msg->txt);
+    }
+    list_iter_reset(messages);
     
-    for (Node *node = messages->first; node != NULL; node = node->next) {
-        if (!msg_print(node->value, sp))
-            return 0;
-    }
-
-    return 1;
-}
-
-int msg_all_linec(const LinkedList *messages, const size_t screenw)
-{
-    if (messages == NULL)
-        return 0;
-
-    unsigned total_lines = 0;
-
-    for (Node *node = messages->first; node != NULL; node = node->next) {
-        const Message *msg = node->value;
-        char *final_msg = msg_format(msg->sender, msg->timestamp, msg->txt);
-        if (final_msg == NULL)
-            return 0;
-
-        total_lines += ((strlen(final_msg) / screenw) + 1);
-        free(final_msg);
-        final_msg = NULL;
-    }
-
-    return total_lines;
+    // Need to reset echo_start in case the message is longer than the screen.
+    tf_reset_echo(tf);
 }

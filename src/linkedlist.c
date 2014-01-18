@@ -20,6 +20,12 @@
 #include <stdlib.h>
 #include "linkedlist.h"
 
+struct Node {
+    Node *next;
+    Node *prev;
+    void *value;
+};
+
 // Creates a new node.
 static Node* list_new_node(LinkedList *list, void *value)
 {
@@ -47,24 +53,65 @@ void list_init(LinkedList *list, const size_t maxsize)
 
     list->maxsize = maxsize;  // Hmmm what would a maxsize of 1 do?
     list->size = 0;
-
-    // Set these pointers to NULL so any attempt to dereference prematurely will crash.
     list->first = NULL;
     list->last = NULL;
+    list->next = NULL;
+    list->prev = NULL;
 }
 
 void* list_get(LinkedList *list, const size_t index)
 {
-    Node *node = list->first;
-    for (size_t i = 0; node != NULL; node = node->next, ++i) {
-        if (i == index)
-            return node->value;
+    if (list == NULL)
+        return NULL;
+
+    size_t i;
+    void *value = NULL;
+
+    /* To make things a little faster, count from the beginning
+     * if the index is in the first half of the list, and count
+     * from the end if index is in the second half. */
+    if (index < (list->size / 2)) {
+        for (i = 0; i <= index; ++i)
+            value = list_next(list);
+
+        list->next = NULL;
+    } else {
+        for (i = list->size; i > index; --i)
+            value = list_prev(list);
+
+        list->prev = NULL;
     }
 
-    return NULL;
+    return value;
 }
 
-Node* list_append(LinkedList *list, void *value)
+void* list_next(LinkedList *list)
+{
+    if (list == NULL)
+        return NULL;
+    
+    if (list->next == NULL)
+        list->next = list->first;
+    else
+        list->next = list->next->next;
+
+    return list->next == NULL ? NULL : list->next->value;
+}
+
+void* list_prev(LinkedList *list)
+{
+    if (list == NULL)
+        return NULL;
+    
+    if (list->prev == NULL)
+        list->prev = list->last;
+    else
+        list->prev = list->prev->prev;
+
+    return list->prev == NULL ? NULL : list->prev->value;
+}
+
+void* list_append(LinkedList *list, void *value)
 {
     if (list == NULL)
         return NULL;
@@ -85,10 +132,10 @@ Node* list_append(LinkedList *list, void *value)
     list->last = node;
 
     ++list->size;
-    return node;
+    return node->value;
 }
 
-Node* list_prepop(LinkedList *list)
+void* list_prepop(LinkedList *list)
 {
     if (list == NULL)
         return NULL;
@@ -100,7 +147,21 @@ Node* list_prepop(LinkedList *list)
     list->first = nxtnode;
 
     --list->size;
-    return list->first;
+    return list->first->value;
+}
+
+size_t list_size(const LinkedList *list)
+{
+    return list->size;
+}
+
+void list_iter_reset(LinkedList *list)
+{
+    if (list == NULL)
+        return;
+
+    list->next = NULL;
+    list->prev = NULL;
 }
 
 void list_clear(LinkedList *list)
@@ -119,5 +180,7 @@ void list_clear(LinkedList *list)
 
     list->first = NULL;
     list->last = NULL;
+    list->next = NULL;
+    list->prev = NULL;
     list->size = 0;
 }

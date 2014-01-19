@@ -52,8 +52,7 @@ int sp_init(ScrollPane *sp, const unsigned x, const unsigned y, const size_t wid
     sp->x = x;
     sp->y = y;
 
-    // Because ncurses pushes cursor to next line if a line is equal to the window width.
-    sp->width = width - 1;
+    sp->width = width;
     sp->height = height;
 
     list_init(&sp->lines, 0);
@@ -94,7 +93,7 @@ int sp_print(ScrollPane *sp, const char *txt)
          * Instead, just increase the scroll offset to account for
          * the newly added line. */
         if (!sp->scroll_offset)
-            wprintw(sp->win, "%s\n", line);
+            wprintw(sp->win, "%s", line);
         else
             ++sp->scroll_offset;
     }
@@ -130,14 +129,7 @@ void sp_scroll(ScrollPane *sp, const int dir)
         line_index = list_size(&sp->lines) - sp->scroll_offset - 1;
     }
 
-    /* Either prints a line at the top or bottom of window, depending on which way
-     * the user scrolled. If the user scrolled down, the line is placed in the blank
-     * area at the bottom of the window, and a newline is printed to actually
-     * cause the window to scroll. */
     mvwprintw(sp->win, starty, sp->x, "%s", list_get(&sp->lines, line_index));
-    if (dir < 0)
-        waddch(sp->win, '\n');
-
     wnoutrefresh(sp->win);
 }
 

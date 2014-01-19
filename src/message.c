@@ -43,7 +43,8 @@ static char* msg_format(const unsigned sender, const time_t timestamp, const cha
 
     /* Allocate enough space to hold the name along with the message.
     * +1 to account for null character. */
-    char *message = malloc(strlen(msg_sender) + strlen(msg) + 1);
+    size_t msglen = strlen(msg_sender) + strlen(msg) + 1;  // +1 for \n
+    char *message = malloc(msglen + 1);
     if (message == NULL)
         return NULL;
 
@@ -52,6 +53,7 @@ static char* msg_format(const unsigned sender, const time_t timestamp, const cha
     // Then copy individual strings into message.
     strncpy(message, msg_sender, sizeof msg_sender);
     strncat(message, msg, strlen(msg) + 1);  // +1 for null char
+    message[msglen - 1] = '\n';
 
     return message;
 }

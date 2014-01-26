@@ -95,6 +95,10 @@ int handle_input(LinkedList *messages, ScrollPane *sp, TxtField *tf)
     case KEY_RESIZE:
         window_resize();
         tf_scale(tf, 0, LINES - 1, COLS);
+
+        if (!sp_scale(sp, 0, 0, COLS, LINES - 1))
+            return 0;
+
         break;
 
     /* If we get here, a key was pressed that we don't explicitly want to handle.
@@ -112,5 +116,4 @@ void window_resize(void)
 {
     endwin();
     refresh();
-    clear();
 }

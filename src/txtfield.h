@@ -66,7 +66,7 @@ void tf_reset_echo(TxtField *tf);
 void tf_move_cursor(TxtField *tf, const int dir);
 
 // Resizes and repositions the text field.
-void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsigned newwidth);
+void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const size_t newwidth);
 
 // Draws a horizontal line across the screen above the input field.
 void tf_draw_border(const TxtField *tf);

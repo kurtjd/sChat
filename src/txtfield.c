@@ -169,7 +169,7 @@ void tf_move_cursor(TxtField *tf, const int dir)
     move(tf->y, get_cursor(X) + tf->cursor_offset);
 }
 
-void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const unsigned newwidth)
+void tf_scale(TxtField *tf, const unsigned newx, const unsigned newy, const size_t newwidth)
 {
     if (tf == NULL)
         return;

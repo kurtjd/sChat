@@ -30,7 +30,7 @@ typedef struct {
     size_t width;
     size_t height;
 
-    LinkedList lines;  // A linked list where each individual line is a node.
+    LinkedList *lines;  // A linked list where each individual line is a node.
     unsigned scroll_offset;  // Keeps track as the user scrolls the window.
 
     WINDOW *win;  // An ncurses window.
@@ -47,6 +47,9 @@ int sp_print(ScrollPane *sp, const char *txt);
 
 // Scrolls the window.
 void sp_scroll(ScrollPane *sp, const int dir);
+
+// Resizes and repositions the window.
+int sp_scale(ScrollPane *sp, const unsigned newx, const unsigned newy, const size_t neww, const size_t newh);
 
 // Clears the window and resets some other values.
 void sp_reset(ScrollPane *sp);
